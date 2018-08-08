@@ -55,7 +55,7 @@ spec:
       serviceAccountName: calico-cni-plugin
       containers:
       - name: calico-node
-        image: quay.io/calico/node:v2.6.2
+        image: {{ images.calico_node.repos }}{{ images.calico_node.name }}:{{ images.calico_node.tag }}
         env:
           - name: CLUSTER_TYPE
             value: "k8s,bgp"
@@ -115,7 +115,7 @@ spec:
             mountPath: {{ etcd.dir.ssl }}
             readOnly: true
       - name: install-cni
-        image: quay.io/calico/cni:v1.11.0
+        image: {{ images.calico_cni.repos }}{{ images.calico_cni.name }}:{{ images.calico_cni.tag }}
         command: ["/install-cni.sh"]
         env:
           - name: ETCD_ENDPOINTS
@@ -183,7 +183,7 @@ spec:
       serviceAccountName: calico-kube-controllers
       containers:
       - name: calico-policy-controller
-        image: quay.io/calico/kube-controllers:v1.0.0
+        image: {{ images.calico_policy_controller.repos }}{{ images.calico_policy_controller.name }}:{{ images.calico_policy_controller.tag }}
         env:
           - name: ETCD_ENDPOINTS
             valueFrom:

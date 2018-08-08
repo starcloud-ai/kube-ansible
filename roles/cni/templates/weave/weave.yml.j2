@@ -17,7 +17,7 @@ spec:
       serviceAccountName: weave-net
       containers:
         - name: weave
-          image: weaveworks/weave-kube:2.0.4
+          image: {{ images.weave_kube.repos }}{{ images.weave_kube.name }}:{{ images.weave_kube.tag }}
           command:
             - /home/weave/launch.sh
           env:
@@ -54,7 +54,7 @@ spec:
             - name: lib-modules
               mountPath: /lib/modules
         - name: weave-npc
-          image: 'weaveworks/weave-npc:2.0.4'
+          image: {{ images.weave_npc.repos }}{{ images.weave_npc.name }}:{{ images.weave_npc.tag }}
           env:
             - name: HOSTNAME
               valueFrom:

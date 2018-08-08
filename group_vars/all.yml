@@ -184,7 +184,7 @@ images:
     repos: "{{ registry_hosts.gcrio }}google_containers/"
     tag: "v1.3.3"
   grafana:
-    name: :"heapster-grafana-amd64"
+    name: "heapster-grafana-amd64"
     repos: "{{ registry_hosts.gcrio }}google_containers/"
     tag: "v4.4.3"
   elasticsearch:
@@ -219,3 +219,39 @@ images:
     name: "nfs-client-provisioner"
     repos: "{{ registry_hosts.quayio }}external_storage/"
     tag: "latest"
+  calico_cni:
+    name: "cni"
+    repos: "{{ registry_hosts.quayio }}calico/"
+    tag: "v1.11.0"
+  calico_node:
+    name: "node"
+    repos: "{{ registry_hosts.quayio }}calico/"
+    tag: "v2.6.2"
+  calico_policy_controller:
+    name: "kube-controllers"
+    repos: "{{ registry_hosts.quayio }}calico/"
+    tag: "v1.0.0"
+  flannel_090:
+    name: "flannel"
+    repos: "{{ registry_hosts.quayio }}coreos/"
+    tag: "v0.9.0-amd64"
+  flannel_091:
+    name: "flannel"
+    repos: "{{ registry_hosts.quayio }}coreos/"
+    tag: "v0.9.1-amd64"
+  kube_router:
+    name: "kube-router"
+    repos: "{{ registry_hosts.docker }}cloudnativelabs/"
+    tag: "latest"
+  busybox:
+    name: "busybox"
+    repos: "{{ registry_hosts.docker }}"
+    tag: "latest"
+  weave_kube:
+    name: "weave-kube"
+    repos: "{{ registry_hosts.docker }}weaveworks/"
+    tag: "2.0.4"
+  weave_npc:
+    name: "weave-npc"
+    repos: "{{ registry_hosts.docker }}weaveworks/"
+    tag: "2.0.4"
