@@ -2,27 +2,27 @@
 
 addon_images:
   # kubernetes dashboard
-  dashboard: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.8.0
+  dashboard:       "{{ images.dashboard.repos }}{{ images.dashboard.name }}:{{ images.dashboard.tag }}"
   # Kube-dns
-  kubedns: gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.7
-  dnsmasq: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.7
-  sidecar: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.7
+  kubedns:         "{{ images.kubedns.repos }}{{ images.kubedns.name }}:{{ images.kubedns.tag }}"
+  dnsmasq:         "{{ images.dnsmasq.repos }}{{ images.dnsmasq.name }}:{{ images.dnsmasq.tag }}"
+  sidecar:         "{{ images.sidecar.repos }}{{ images.sidecar.name }}:{{ images.sidecar.tag }}"
   # Kubernetes monitor
-  heapster: gcr.io/google_containers/heapster-amd64:v1.5.0-beta.2
-  resizer: gcr.io/google_containers/addon-resizer:1.7
-  influxdb: gcr.io/google_containers/heapster-influxdb-amd64:v1.3.3
-  grafana: gcr.io/google_containers/heapster-grafana-amd64:v4.4.3
+  heapster:        "{{ images.heapster.repos }}{{ images.heapster.name }}:{{ images.heapster.tag }}"
+  resizer:         "{{ images.resizer.repos }}{{ images.resizer.name }}:{{ images.resizer.tag }}"
+  influxdb:        "{{ images.influxdb.repos }}{{ images.influxdb.name }}:{{ images.influxdb.tag }}"
+  grafana:         "{{ images.grafana.repos }}{{ images.grafana.name }}:{{ images.grafana.tag }}"
   # Kubernetes logging
-  elasticsearch: gcr.io/google-containers/elasticsearch:v5.6.2
-  fluentd: gcr.io/google-containers/fluentd-elasticsearch:v2.0.2
-  kibana: docker.elastic.co/kibana/kibana:5.6.2
+  elasticsearch:   "{{ images.elasticsearch.repos }}{{ images.elasticsearch.name }}:{{ images.elasticsearch.tag }}"
+  fluentd:         "{{ images.fluentd.repos }}{{ images.fluentd.name }}:{{ images.fluentd.tag }}"
+  kibana:          "{{ images.kibana.repos }}{{ images.kibana.name }}:{{ images.kibana.tag }}"
   # Ingress controller
-  nginx_ingress: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.9.0
-  default_backend: gcr.io/google_containers/defaultbackend:1.4
-  traefik: traefik:v1.5-alpine
+  nginx_ingress:   "{{ images.nginx_ingress.repos }}{{ images.nginx_ingress.name }}:{{ images.nginx_ingress.tag }}"
+  default_backend: "{{ images.default_backend.repos }}{{ images.default_backend.name }}:{{ images.default_backend.tag }}"
+  traefik:         "{{ images.traefik.repos }}{{ images.traefik.name }}:{{ images.traefik.tag }}"
   # Kube-proxy
-  kube_proxy: "gcr.io/google_containers/kube-proxy-amd64:v{{ kube_version }}"
-  nfs_client: "quay.io/external_storage/nfs-client-provisioner:latest"
+  kube_proxy:      "{{ images.kube_proxy.repos }}{{ images.kube_proxy.name }}:{{ images.kube_proxy.tag }}"
+  nfs_client:      "{{ images.nfs_client.repos }}{{ images.nfs_client.name }}:{{ images.nfs_client.tag }}"
 # Kube-addons resources
 num_nodes: "{{ groups['kube-cluster'] | length }}"
 base_metrics_memory: 140Mi
