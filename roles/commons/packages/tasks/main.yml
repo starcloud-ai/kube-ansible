@@ -2,7 +2,7 @@
 # Download component task
 
 - name: Override local repository url
-  when: 'pkg is defined and repos_offline'
+  when: 'pkg is defined and repos_offline and pkg.apt_name is not defined'
   set_fact:
     bases: >
       {{ bases |
@@ -13,19 +13,19 @@
       }}
 
 - name: Create download binaries tmp directory
-  when: pkg is defined
+  when: 'pkg is defined and pkg.apt_name is not defined'
   file: path="{{ dir.download }}" state=directory
 
 - name: "Create {{ pkg.description }} release directory"
-  when: pkg is defined
+  when: 'pkg is defined and pkg.apt_name is not defined '
   file: path="{{ pkg.dir }}" state=directory
 
 - name: Include download archive file
-  when: 'pkg is defined and "unarchive" in pkg'
+  when: 'pkg is defined and "unarchive" in pkg and pkg.apt_name is not defined'
   include_tasks: archive-file.yml
 
 - name: Include download binary file
-  when: 'pkg is defined and not "unarchive" in pkg'
+  when: 'pkg is defined and not "unarchive" in pkg and pkg.apt_name is not defined'
   include_tasks: binary-file.yml
 
 - name: Handle containerd pakcages
@@ -33,10 +33,18 @@
   include_tasks: containerd.yml
 
 - name: "Symlinks {{ pkg.description }} component"
-  when: 'pkg is defined and "symlinks" in pkg and pkg_copy'
+  when: 'pkg is defined and "symlinks" in pkg and pkg_copy and pkg.apt_name is not defined'
   file:
     src: "{{ pkg.dir }}/{{ item }}"
     dest: "{{ dir.bin }}/{{ item }}"
     state: link
     force: yes
   with_items: "{{ pkg['symlinks'] }}"
+
+- name: Install packages (RHEL/CentOS)
+  when: 'pkg is defined and pkg.apt_name is defined and ansible_os_family == "RedHat"'
+  yum: name={{ pkg.yum_name }} state=present
+
+- name: Install packages (Debian/Ubuntu)
+  when: 'pkg is defined and pkg.apt_name is defined and ansible_os_family == "Debian"'
+  apt: name={{ pkg.apt_name }} state=present

@@ -124,3 +124,12 @@ downloads:
       extra_opt: "['--strip-components=0']"
     symlinks: [ 'sigil' ]
     file: "sigil_{{ bases.sigil.version }}_Linux_x86_64.tgz"
+system:
+  socat:
+      name: socat
+      apt_name: socat
+      yum_name: socat
+  nfs_common:
+      name: nfs_commom
+      apt_name: nfs-common
+      yum_name: nfs_common
