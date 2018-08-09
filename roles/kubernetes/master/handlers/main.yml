@@ -111,8 +111,8 @@
 
 - name: Init helm
   when: create_tiller_result
-  command: |
-    {{ dir.bin }}/helm init --service-account tiller
+  shell: |
+    KUBECONFIG={{ kubernetes.config.admin }} {{ dir.bin }}/helm init --service-account tiller
   delegate_to: "{{ groups['masters'][0] }}"
   run_once: true
   ignore_errors: true

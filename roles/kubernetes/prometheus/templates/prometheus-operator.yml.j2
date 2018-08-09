@@ -1,0 +1,29 @@
+global:
+  ## Hyperkube image to use when getting ThirdPartyResources & cleaning up
+  hyperkube:
+    repository: {{ addon_images.prometheus.hyperkube.repos }}
+    tag: {{ addon_images.prometheus.hyperkube.tag }}
+
+## Prometheus-config-reloader image to use for config and rule reloading
+prometheusConfigReloader:
+  repository: {{ addon_images.prometheus.prometheus_config_reloader.repos }}
+  tag: {{ addon_images.prometheus.prometheus_config_reloader.tag }}
+
+## Configmap-reload image to use for reloading configmaps
+configmapReload:
+  repository: {{ addon_images.prometheus.configmap_reload.repos }}
+  tag: {{ addon_images.prometheus.configmap_reload.tag }}
+
+## Prometheus-operator image
+image:
+  repository: {{ addon_images.prometheus.prometheus_operator.repos }}
+  tag: {{ addon_images.prometheus.prometheus_operator.tag }}
+
+## Prometheus-operator resource limits & requests
+resources:
+  limits:
+    cpu: {{ monitor_prometheus.prometheus_operator.limits.cpu }}
+    memory: {{ monitor_prometheus.prometheus_operator.limits.memory }}
+  requests:
+    cpu: {{ monitor_prometheus.prometheus_operator.requests.cpu }}
+    memory: {{ monitor_prometheus.prometheus_operator.requests.memory }}

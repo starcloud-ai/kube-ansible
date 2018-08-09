@@ -1,0 +1,71 @@
+---
+
+- name: "Set helm path"
+  set_fact:
+    helm_path: "{{ kubernetes.dir.addon }}/prometheus"
+    config_files:
+      - 'kube-prometheus.yml'
+      - 'prometheus-operator.yml'
+      - 'monitoring-ingress.yml'
+
+- name: Clean old helm chart
+  file:
+    state: "absent"
+    path: "{{ helm_path }}"
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true
+
+- name: Generate helm chart sub_dirs
+  set_fact:
+    sub_dirs: "{{sub_dirs|default([])}} + [\"{{ helm_path }}/{{ item|regex_replace('^.*/templates/prometheus-operator/', '') }}\"]"
+  with_items: "{{ lookup('pipe', 'find {{role_path}}/templates/prometheus-operator/helm -type d').split('\n') }}"
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true
+
+- name: Create helm chart sub_dirs
+  file:
+    state: "directory"
+    path: "{{ item }}"
+  with_items: "{{ sub_dirs }}"
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true
+
+- name: Generate chart files
+  set_fact:
+    chart_files: "{{chart_files|default({})|combine({item: helm_path+'/'+item|regex_replace('^.*/templates/prometheus-operator/', '')})}}"
+  with_items: "{{ lookup('pipe', 'find {{role_path}}/templates/prometheus-operator/helm -type f').split('\n') }}"
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true
+
+- name: Copy helm chart file
+  copy:
+    src: "{{ item.key }}"
+    dest: "{{ item.value }}"
+  with_dict: "{{ chart_files }}"
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true
+
+- name: Copy helm config file
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ helm_path }}/{{ item }}"
+  with_items: "{{ config_files }}"
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true
+
+- name: "Replace current http repository to the helm path"
+  shell: |
+    sed -ie 's/    repository/#    repository/g' "{{ helm_path }}"/helm/*/requirements.yaml && \
+    sed -ie 's/#e2e-repository/repository/g' "{{ helm_path }}"/helm/*/requirements.yaml
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true
+  register: out
+
+- name: "Package charts and install all"
+  shell: |
+    KUBECONFIG={{ kubernetes.config.admin }} {{ dir.bin }}/helm dependency update "{{ helm_path }}/helm/kube-prometheus" && \
+    KUBECONFIG={{ kubernetes.config.admin }} {{ dir.bin }}/helm install --namespace=monitoring "{{ helm_path }}/helm/prometheus-operator" --name prometheus-operator -f "{{ helm_path }}/prometheus-operator.yml" && \
+    KUBECONFIG={{ kubernetes.config.admin }} {{ dir.bin }}/helm install --namespace=monitoring "{{ helm_path }}/helm/kube-prometheus" --name kube-prometheus -f "{{ helm_path }}/kube-prometheus.yml" && \
+    {{ dir.bin }}/kubectl --kubeconfig={{ kubernetes.config.admin }} apply -f "{{ helm_path }}/monitoring-ingress.yml"
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true

@@ -1,0 +1,3 @@
+[submodule "prometheus-operator"]
+	path = roles/kubernetes/prometheus/templates/prometheus-operator
+	url = https://github.com/coreos/prometheus-operator.git

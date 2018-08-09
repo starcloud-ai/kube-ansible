@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: monitoring
+  namespace: monitoring
+  annotations:
+    ingress.kubernetes.io/auth-type: basic
+    ingress.kubernetes.io/auth-secret: basic-auth
+    ingress.kubernetes.io/auth-realm: "Authentication Required - {{ monitor_prometheus.ingress_auth_user }}"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: {{ monitor_prometheus.prometheus_ingress_host }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: kube-prometheus
+              servicePort: 9090
+          - path: /alertmanager
+            backend:
+              serviceName: kube-prometheus-alertmanager
+              servicePort: 9093
+    - host: {{ monitor_prometheus.grafana_ingress_host }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: kube-prometheus-grafana
+              servicePort: 80
+{% if monitor_prometheus.ingress_auth_secret -%}
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: basic-auth
+  namespace: monitoring
+data:
+  auth: {{ monitor_prometheus.ingress_auth_secret }}
+{% endif -%}

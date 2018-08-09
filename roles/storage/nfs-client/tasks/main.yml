@@ -14,7 +14,7 @@
   run_once: true
   register: copy_addon
 
-- name: "Apply {{ addon.name }} addon"
+- name: "Apply nfs-client addon"
   when: copy_addon
   command: |
     {{ dir.bin }}/kubectl --kubeconfig={{ kubernetes.config.admin }} \

@@ -1,0 +1,119 @@
+alertmanager:
+  ## External URL at which Alertmanager will be reachable
+  externalUrl: "/alertmanager"
+
+  ## Alertmanager container image
+  image:
+    repository: {{ addon_images.prometheus.alertmanager.repos }}
+    tag: {{ addon_images.prometheus.alertmanager.tag }}
+
+  ## Resource limits & requests
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  resources:
+    limits:
+      cpu: {{ monitor_prometheus.alertmanager.limits.cpu }}
+      memory: {{ monitor_prometheus.alertmanager.limits.memory }}
+    requests:
+      cpu: {{ monitor_prometheus.alertmanager.requests.cpu }}
+      memory: {{ monitor_prometheus.alertmanager.requests.memory }}
+
+  ## Alertmanager StorageSpec for persistent data
+  ## Ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/user-guides/storage.md
+{% if not monitor_prometheus.alertmanager.storage_class_name %}
+  storageSpec: {}
+{% else %}
+  storageSpec:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: {{ monitor_prometheus.alertmanager.storage_class_name }}
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ monitor_prometheus.alertmanager.storage_size }}
+      selector: {}
+{% endif %}
+
+prometheus:
+  ## External URL at which Prometheus will be reachable
+  externalUrl: "/"
+
+  ## Prometheus container image
+  image:
+    repository: {{ addon_images.prometheus.prometheus.repos }}
+    tag: {{ addon_images.prometheus.prometheus.tag }}
+
+  ## Resource limits & requests
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  resources:
+    limits:
+      cpu: {{ monitor_prometheus.prometheus.limits.cpu }}
+      memory: {{ monitor_prometheus.prometheus.limits.memory }}
+    requests:
+      cpu: {{ monitor_prometheus.prometheus.requests.cpu }}
+      memory: {{ monitor_prometheus.prometheus.requests.memory }}
+
+  ## How long to retain metrics
+  retention: {{ monitor_prometheus.prometheus.retention }}
+
+  ## Prometheus StorageSpec for persistent data
+  ## Ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/user-guides/storage.md
+{% if not monitor_prometheus.prometheus.storage_class_name %}
+  storageSpec: {}
+{% else %}
+  storageSpec:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: {{ monitor_prometheus.prometheus.storage_class_name }}
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ monitor_prometheus.prometheus.storage_size }}
+      selector: {}
+{% endif %}
+
+exporter-kube-state:
+  kube_state_metrics:
+    image:
+      repository: {{ addon_images.prometheus.kube_state_metrics.repos }}
+      tag: {{ addon_images.prometheus.kube_state_metrics.tag }}
+  addon_resizer:
+    image:
+      repository: {{ addon_images.prometheus.addon_resizer.repos }}
+      tag: {{ addon_images.prometheus.addon_resizer.tag }}
+
+exporter-node:
+  image:
+    repository: {{ addon_images.prometheus.node_exporter.repos }}
+    tag: {{ addon_images.prometheus.node_exporter.tag }}
+
+grafana:
+  adminUser: "{{ monitor_prometheus.grafana.admin_user }}"
+  adminPassword: "{{ monitor_prometheus.grafana.admin_pass }}"
+
+  image:
+    repository: {{ addon_images.prometheus.grafana.repos }}
+    tag: {{ addon_images.prometheus.grafana.tag }}
+
+  grafanaWatcher:
+    repository: {{ addon_images.prometheus.grafana_watcher.repos }}
+    tag: {{ addon_images.prometheus.grafana_watcher.tag }}
+
+{% if not monitor_prometheus.grafana.storage_class_name %}
+  storageSpec: {}
+{% else %}
+  storageSpec:
+    class: {{ monitor_prometheus.grafana.storage_class_name }}
+    accessMode: "ReadWriteOnce"
+    resources:
+      requests:
+        storage: {{ monitor_prometheus.grafana.storage_size }}
+    selector: {}
+{% endif %}
+
+  resources:
+    limits:
+      cpu: {{ monitor_prometheus.grafana.limits.cpu }}
+      memory: {{ monitor_prometheus.grafana.limits.memory }}
+    requests:
+      cpu: {{ monitor_prometheus.grafana.requests.cpu }}
+      memory: {{ monitor_prometheus.grafana.requests.memory }}
