@@ -132,4 +132,4 @@ system:
   nfs_common:
       name: nfs_commom
       apt_name: nfs-common
-      yum_name: nfs_common
+      yum_name: nfs-utils
