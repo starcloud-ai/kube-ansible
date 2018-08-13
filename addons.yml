@@ -5,9 +5,10 @@
   become: true
   gather_facts: false
   roles:
-  - { role: cluster-default }
+  - { role: cluster-default, tags: always }
   - { role: k8s-addon, tags: dashboard,     when: enable_dashboard,     addon: "{{ addons.dashboard }}" }
   - { role: k8s-addon, tags: logging,       when: enable_logging,       addon: "{{ addons.logging }}" }
   - { role: k8s-addon, tags: monitoring,    when: enable_monitoring,    addon: "{{ addons.monitoring }}" }
   - { role: k8s-addon, tags: ingress-nginx, when: enable_ingress,       addon: "{{ addons.ingress_nginx }}" }
   - { role: k8s-addon, tags: metric-server, when: enable_metric_server, addon: "{{ addons.metric_server }}" }
+  - { role: k8s-addon, tags: helm,          when: enable_helm,          addon: "{{ addons.helm }}" }

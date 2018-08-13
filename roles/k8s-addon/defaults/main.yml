@@ -135,3 +135,9 @@ addons:
       - monitoring/servicemonitor/node-exporter-sm.yml
       - monitoring/servicemonitor/prometheus-operator-sm.yml
       - monitoring/servicemonitor/prometheus-sm.yml
+  helm:
+    name: helm
+    dirs:
+      - tiller
+    templates:
+      - tiller/tiller-rbac.yml

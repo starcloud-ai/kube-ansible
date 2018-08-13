@@ -25,6 +25,7 @@ enable_dashboard: false
 enable_logging: false
 enable_monitoring: false
 enable_metric_server: false
+enable_helm: false
 
 grafana_user: "admin"
 grafana_password: "p@ssw0rd"

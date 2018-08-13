@@ -1,0 +1,7 @@
+---
+
+library:
+  socat:
+    name: socat
+    apt_name: socat
+    yum_name: socat

@@ -1,0 +1,4 @@
+---
+
+dependencies:
+  - { role: download/library, when: "addon is defined and addon.name == 'socat'", pkg: "{{ library.socat }}" }
