@@ -104,11 +104,11 @@ nfs_server: "192.168.21.29"
 nfs_path: "/var/nfs/home"
 nfs_storage_class: "nfs"
 
-# registry_hosts:
-#   docker:          ""
-#   gcrio:           "gcr.io/"
-#   elastic:         "docker.elastic.co/"
-#   quayio:          "quay.io/"
+#registry_hosts:
+#  docker:          ""
+#  gcrio:           "gcr.io/"
+#  elastic:         "docker.elastic.co/"
+#  quayio:          "quay.io/"
 
 registry_hosts:
   docker:          "{{ registry_url }}/"
@@ -118,39 +118,39 @@ registry_hosts:
 
 images:
   pod_infra: # registry.access.redhat.com/rhel7/pod-infrastructure
-    name: pause
+    name: "pause"
     repos: "{{ registry_hosts.gcrio }}google_containers/"
     tag: "3.0"
   apiserver:
-    name: kube-apiserver-amd64
+    name: "kube-apiserver-amd64"
     repos: "{{ registry_hosts.gcrio }}google_containers/"
     tag: "v{{ kube_version }}"
   manager: # 'quay.io/attcomdev/kube-controller-manager:v{{ kube_version }}' for ceph storage class
-    name: kube-controller-manager-amd64
+    name: "kube-controller-manager-amd64"
     repos: "{{ registry_hosts.gcrio }}google_containers/"
     tag: "v{{ kube_version }}"
   scheduler:
-    name: kube-scheduler-amd64
+    name: "kube-scheduler-amd64"
     repos: "{{ registry_hosts.gcrio }}google_containers/"
     tag: "v{{ kube_version }}"
   haproxy:
-    name: haproxy
+    name: "haproxy"
     repos: "{{ registry_hosts.docker }}kairen/"
     tag: "1.7"
   keepalived:
-    name: keepalived
+    name: "keepalived"
     repos: "{{ registry_hosts.docker }}kairen/"
     tag: "1.2.24"
   registry:
-    name: registry
+    name: "registry"
     repos: "{{ registry_hosts.docker }}kairen/"
     tag: "2.6.1"
   registry_ui:
-    name: docker-registry-ui
+    name: "docker-registry-ui"
     repos: "{{ registry_hosts.docker }}parabuzzle/"
     tag: "2.1.3"
   repos:
-    name: pkg-repos
+    name: "pkg-repos"
     repos: "{{ registry_hosts.docker }}kairen/"
     tag: "0.1.0"
   dashboard:
@@ -202,11 +202,11 @@ images:
     repos: "{{ registry_hosts.quayio }}kubernetes-ingress-controller/"
     tag: "0.9.0"
   default_backend:
-    name: defaultbackend
+    name: "defaultbackend"
     repos: "{{ registry_hosts.gcrio }}google_containers/"
     tag: "1.4"
   traefik:
-    name: traefik
+    name: "traefik"
     repos: "{{ registry_hosts.docker }}"
     tag: "v1.5-alpine"
   kube_proxy:
@@ -253,3 +253,47 @@ images:
     name: "weave-npc"
     repos: "{{ registry_hosts.docker }}weaveworks/"
     tag: "2.0.4"
+  prometheus_hyperkube:
+    name: "hyperkube"
+    repos: "{{ registry_hosts.quayio }}coreos/"
+    tag: "v1.7.6_coreos.0"
+  prometheus_prometheus_config_reloader:
+    name: "prometheus-config-reloader"
+    repos: "{{ registry_hosts.quayio }}coreos/"
+    tag: "v0.20.0"
+  prometheus_configmap_reload:
+    name: "configmap-reload"
+    repos: "{{ registry_hosts.quayio }}coreos/"
+    tag: "v0.0.1"
+  prometheus_prometheus_operator:
+    name: "prometheus-operator"
+    repos: "{{ registry_hosts.quayio }}coreos/"
+    tag: "v0.20.0"
+  prometheus_alertmanager:
+    name: "alertmanager"
+    repos: "{{ registry_hosts.quayio }}prometheus/"
+    tag: "v0.14.0"
+  prometheus_prometheus:
+    name: "prometheus"
+    repos: "{{ registry_hosts.quayio }}prometheus/"
+    tag: "v2.2.1"
+  prometheus_kube_state_metrics:
+    name: "kube-state-metrics"
+    repos: "{{ registry_hosts.gcrio }}google_containers/"
+    tag: "v1.2.0"
+  prometheus_addon_resizer:
+    name: "addon-resizer"
+    repos: "{{ registry_hosts.gcrio }}google_containers/"
+    tag: "1.7"
+  prometheus_node_exporter:
+    name: "node-exporter"
+    repos: "{{ registry_hosts.quayio }}prometheus/"
+    tag: "v0.15.2"
+  prometheus_grafana:
+    name: "grafana"
+    repos: "{{ registry_hosts.docker }}grafana/"
+    tag: "5.0.0"
+  prometheus_grafana_watcher:
+    name: "grafana-watcher"
+    repos: "{{ registry_hosts.quayio }}coreos/"
+    tag: "v0.0.8"

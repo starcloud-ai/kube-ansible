@@ -170,6 +170,8 @@ logging:
       memory: 200Mi
   elasticsearch:
     max_map_count: 262144
+    storage_class_name: "nfs"
+    storage_size: "10Gi"
     limits:
       cpu: 500m
     requests:
