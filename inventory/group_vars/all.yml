@@ -25,7 +25,12 @@ enable_dashboard: false
 enable_logging: false
 enable_monitoring: false
 enable_metric_server: false
+enable_nfs_client: false
 enable_helm: false
 
 grafana_user: "admin"
 grafana_password: "p@ssw0rd"
+
+nfs_server: "192.168.21.29"
+nfs_path: "/var/nfs/home"
+nfs_storage_class: "nfs"

@@ -141,3 +141,13 @@ addons:
       - tiller
     templates:
       - tiller/tiller-rbac.yml
+  nfs_client:
+    name: nfs_client
+    dirs:
+      - nfs-client
+    templates:
+      - nfs-client/serviceaccount.yaml
+      - nfs-client/clusterrole.yaml
+      - nfs-client/clusterrolebinding.yaml
+      - nfs-client/deployment.yaml
+      - nfs-client/class.yaml
