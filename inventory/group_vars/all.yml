@@ -38,6 +38,9 @@ nfs_storage_class: "nfs"
 logging:
   kibana:
     ingress_host: "kibana.local.ai"
+  elasticsearch:
+    storage_class_name: "nfs"
+    storage_size: "10Gi"
 
 monitoring:
   prometheus:

@@ -57,4 +57,27 @@ spec:
           value: "1"
       volumes:
       - name: elasticsearch-logging
+        {% if not logging.elasticsearch.storage_class_name -%}
         emptyDir: {}
+        {% else -%}
+        persistentVolumeClaim:
+          claimName: elasticsearch-logging
+        {% endif %}
+
+{% if logging.elasticsearch.storage_class_name -%}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: elasticsearch-logging
+  namespace: kube-system
+  labels:
+    k8s-app: elasticsearch-logging
+spec:
+  storageClassName: {{ logging.elasticsearch.storage_class_name }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ logging.elasticsearch.storage_size }}
+{% endif -%}
