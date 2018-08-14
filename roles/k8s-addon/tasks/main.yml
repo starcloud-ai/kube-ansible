@@ -39,6 +39,10 @@
     {{ bin_dir }}/kubectl --kubeconfig={{ admin_kubeconfig }}  \
        get {{ item.kind }} --no-headers | \
        grep {{ item.name }} | awk '{ print $2}' | uniq
+    {% elif item.kind == 'ingress' %}
+    {{ bin_dir }}/kubectl -n {{ item.namespace }} --kubeconfig={{ admin_kubeconfig }} \
+      get {{ item.kind }} --no-headers | \
+      grep {{ item.name }} | awk '{ print $1}' | uniq
     {% else %}
     {{ bin_dir }}/kubectl -n {{ item.namespace }} --kubeconfig={{ admin_kubeconfig }} \
       get {{ item.kind }} --no-headers | \
@@ -48,7 +52,7 @@
   delegate_to: "{{ groups['masters'][0] }}"
   run_once: true
   register: check_addon_deps
-  until: check_addon_deps.stdout == 'Running' or check_addon_deps.stdout == 'Active'
+  until: check_addon_deps.stdout == 'Running' or check_addon_deps.stdout == 'Active' or check_addon_deps.stdout == item.name
   retries: 10
   delay: 10
 

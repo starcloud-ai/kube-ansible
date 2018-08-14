@@ -34,3 +34,13 @@ grafana_password: "p@ssw0rd"
 nfs_server: "192.168.21.29"
 nfs_path: "/var/nfs/home"
 nfs_storage_class: "nfs"
+
+logging:
+  kibana:
+    ingress_host: "kibana.local.ai"
+
+monitoring:
+  prometheus:
+    ingress_host: "prometheus.local.ai"
+  grafana:
+    ingress_host: "grafana.local.ai"

@@ -13,3 +13,19 @@ spec:
     targetPort: ui
   selector:
     k8s-app: kibana-logging
+{% if logging.kibana.ingress_host -%}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kibana-logging
+  namespace: kube-system
+spec:
+  rules:
+  - host: {{ logging.kibana.ingress_host }}
+    http:
+      paths:
+      - backend:
+          serviceName: kibana-logging
+          servicePort: 5601
+{% endif -%}

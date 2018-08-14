@@ -97,6 +97,11 @@ addons:
           - monitoring/operator/operator-rbac.yml
           - monitoring/operator/operator-svc.yml
           - monitoring/operator/operator-dp.yml
+      - name: monitoring-ingress
+        kind: ingress
+        namespace: monitoring
+        files:
+          - monitoring/monitoring-ing.yml
     files:
       - monitoring/grafana/grafana-definitions.yml
       - monitoring/prometheus/prometheus-rules.yml
