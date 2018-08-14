@@ -1,5 +1,4 @@
 ---
 
 dependencies:
-  - { role: download/library, when: "addon is defined and addon.name == 'socat'", pkg: "{{ library.socat }}" }
-  - { role: download/library, when: "addon is defined and addon.name == 'nfs_client'", pkg: "{{ library.nfs_common }}" }
+  - { role: download/package, when: addon is defined and addon.name == 'helm', pkg: "{{ package.helm }}" }

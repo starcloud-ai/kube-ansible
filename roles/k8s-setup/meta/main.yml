@@ -3,3 +3,5 @@
 dependencies:
   - { role: download/package, pkg: "{{ package.cni }}" }
   - { role: download/package, pkg: "{{ package.kubelet }}" }
+  - { role: download/library, pkg: "{{ library.socat }}" }
+  - { role: download/library, pkg: "{{ library.nfs_common }}" }
