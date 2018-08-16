@@ -17,14 +17,8 @@
     mode: 0644
 
 - name: Remove swapfile from /etc/fstab
-  mount:
-    name: swap
-    fstype: swap
-    state: absent
-
-- name: Disable swap
-  command: swapoff -a
-  when: ansible_swaptotal_mb > 0
+  shell: swapoff -a && sed -i 's/.*swap.*/#&/' /etc/fstab
+  become: yes
 
 - name: Enable and restart kubelet engine
   systemd:
