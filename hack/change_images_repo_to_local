@@ -43,7 +43,7 @@ do
   if [ `grep -c "^ *image: *quay.io" ${f}` -ne '0' ]; then
     change_for_quay_io ${f}
   elif [ `grep -c "^ *image: *docker.io" ${f}` -ne '0' ]; then
-    change_for_gcr_io ${f}
+    change_for_docker_io ${f}
   elif [ `grep -c "^ *image: *docker.elastic.co" ${f}` -ne '0' ]; then
     change_for_elastic ${f}
   elif [ `grep -c "^ *image: *k8s.gcr.io" ${f}` -ne '0' ]; then
