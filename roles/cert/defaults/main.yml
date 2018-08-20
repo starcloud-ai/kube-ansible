@@ -6,9 +6,9 @@ apiserver_hosts: "{{ vip_address }},{{ api_service_ip }},127.0.0.1,kubernetes.de
 
 cert_key_algo: rsa
 cert_key_size: 2048
-cert_info_country: TW
-cert_info_state: Taipei
-cert_info_locality: "New Taipei city"
+cert_info_country: CN
+cert_info_state: Beijing
+cert_info_locality: "Beijing city"
 cert_info_org_uit: Kubernetes-ansible
 cert_info_expiry: 87600h
 cert_info_profile: kubernetes
