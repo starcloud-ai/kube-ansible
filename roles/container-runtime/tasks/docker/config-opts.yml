@@ -3,9 +3,6 @@
 - name: Copy Docker environment config file
   template: src=docker/docker.env.j2 dest={{ systemd_env_dir }}/docker
 
-- name: Copy Docker daemon config file
-  template: src=docker/daemon.json.j2 dest={{ systemd_env_dir }}/docker
-
 - name: Add any insecure registrys to Docker config
   when: insecure_registrys is defined and insecure_registrys > 0
   lineinfile:

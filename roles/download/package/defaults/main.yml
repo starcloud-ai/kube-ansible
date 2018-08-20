@@ -84,7 +84,7 @@ package:
     dir: /opt/nvidia-docker
     url: "{{ base.nvidia_docker.url }}/kairen/k8s-manual-files/releases/download/nvidia"
     unarchive:
-      extra_opt: "['--strip-components=3']"
+      extra_opt: "['--strip-components=1']"
     symlinks:
       - usr/bin/nvidia-docker
     file: "nvidia-docker-v{{ base.nvidia_docker.version }}_amd64.tar.gz"
@@ -93,7 +93,7 @@ package:
     dir: /opt/libnvidia-container
     url: "{{ base.libnvidia_container.url }}/kairen/k8s-manual-files/releases/download/nvidia"
     unarchive:
-      extra_opt: "['--strip-components=4']"
+      extra_opt: "['--strip-components=1']"
     symlinks:
       - usr/local/bin/nvidia-container-cli
     file: "libnvidia-container-{{ base.libnvidia_container.version }}_amd64.tar.xz"
@@ -102,7 +102,7 @@ package:
     dir: /opt/nvidia-container-runtime
     url: "{{ base.nvidia_container_runtime.url }}/kairen/k8s-manual-files/releases/download/nvidia"
     unarchive:
-      extra_opt: "['--strip-components=3']"
+      extra_opt: "['--strip-components=1']"
     symlinks:
       - usr/bin/nvidia-container-runtime
       - usr/bin/nvidia-container-runtime-hook
