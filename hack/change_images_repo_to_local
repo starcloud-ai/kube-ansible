@@ -3,60 +3,11 @@
 repo="{{ localrepo }}"
 files=`find .. -name '*.j2'`
 
-change_for_k8s_gcr_io()
-{
-  sed -E -i '_bak' "s/(^ *)image: *(k8s.gcr.io)(.*)/\1image: ${repo}\3/" $1
-}
-
-change_for_gcr_io()
-{
-  sed -E -i '_bak' "s/(^ *)image: *(gcr.io)(.*)/\1image: ${repo}\3/" $1
-}
-
-change_for_quay_io()
-{
-  sed -E -i '_bak' "s/(^ *)image: *(quay.io)(.*)/\1image: ${repo}\3/" $1
-}
-
-change_for_quay_io2()
-{
-  sed -E -i '_bak' "s/(^ *)baseImage: *(quay.io)(.*)/\1image: ${repo}\3/" $1
-}
-
-change_for_docker_io()
-{
-  sed -E -i '_bak' "s/(^ *)image: *(docker.io)(.*)/\1image: ${repo}\3/" $1
-}
-
-change_for_elastic()
-{
-  sed -E -i '_bak' "s/(^ *)image: *(docker.elastic.co)(.*)/\1image: ${repo}\3/" $1
-}
-
-change_for_default()
-{
-  sed -E -i '_bak' "s/(^ *)image: *(.*)/\1image: ${repo}\2/" $1
-}
+basepath=$(cd `dirname $0`; pwd)
+echo $basepath
 
 for f in ${files}
 do
-  if [ `grep -c "^ *image: *${repo}" ${f}` -ne '0' ]; then
-    echo ok
-  elif [ `grep -c "^ *image: *quay.io" ${f}` -ne '0' ]; then
-    change_for_quay_io ${f}
-  elif [ `grep -c "^ *image: *docker.io" ${f}` -ne '0' ]; then
-    change_for_docker_io ${f}
-  elif [ `grep -c "^ *image: *docker.elastic.co" ${f}` -ne '0' ]; then
-    change_for_elastic ${f}
-  elif [ `grep -c "^ *image: *k8s.gcr.io" ${f}` -ne '0' ]; then
-    change_for_k8s_gcr_io ${f}
-  elif [ `grep -c "^ *image: *gcr.io" ${f}` -ne '0' ]; then
-    change_for_gcr_io ${f}
-  elif [ `grep -c "^ *baseImage: *quay.io" ${f}` -ne '0' ]; then
-    change_for_quay_io2 ${f}
-  elif [ `grep -c "^ *image:" ${f}` -ne '0' ]; then
-    change_for_default ${f}
-  else
-    echo ${f} no image
-  fi
+  echo $f $repo
+  python  ${basepath}/offline-tools/change_images_repo_to_local.py -f "${f}" -r "${repo}"
 done
