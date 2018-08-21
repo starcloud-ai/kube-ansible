@@ -12,7 +12,7 @@ spec:
       namespace: monitoring
       port: web
   baseImage: quay.io/prometheus/prometheus
-  externalUrl: /
+  externalUrl: http://{{ monitoring.prometheus.ingress_host }}/
   replicas: 2
   resources:
     requests:
