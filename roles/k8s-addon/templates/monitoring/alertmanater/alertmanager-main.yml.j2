@@ -8,6 +8,6 @@ metadata:
 spec:
   serviceAccountName: alertmanager-main
   baseImage: quay.io/prometheus/alertmanager
-  externalUrl: /alertmanager
+  externalUrl: http://{{ monitoring.prometheus.ingress_host }}/alertmanager
   replicas: 3
   version: v0.15.0
