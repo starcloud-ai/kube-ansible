@@ -12,6 +12,7 @@ repo_pattern = [
     "(^ *)image: *docker.io/(.*)",
     "(^ *)image: *docker.elastic.co/(.*)",
     "(^ *)image: *(.*)",
+    "(^.*)=quay.io/coreos/(.*$)",
 ]
 
 new_repo_format = {
@@ -23,6 +24,7 @@ new_repo_format = {
     "(^ *)image: *docker.io/(.*)": "%simage: %s/%s\n",
     "(^ *)image: *docker.elastic.co/(.*)": "%simage: %s/%s\n",
     "(^ *)image: *(.*)": "%simage: %s/%s\n",
+    "(^.*)=quay.io/coreos/(.*$)": "%s=%s/coreos/%s\n"
 }
 
 repo_pattern_obj = {}
