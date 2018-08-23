@@ -65,6 +65,7 @@ spec:
         - mountPath: /etc/coredns
           name: config-volume
           readOnly: true
+      dnsPolicy: Default
       volumes:
       - configMap:
           defaultMode: 420
