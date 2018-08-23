@@ -1,9 +1,10 @@
 #!/bin/bash
 
-repo="{{ localrepo }}"
-files=`find .. -name '*.j2'`
-
 basepath=$(cd `dirname $0`; pwd)
+
+repo="{{ localrepo }}"
+files=`find $basepath/.. -name '*.j2'`
+
 echo $basepath
 
 for f in ${files}
