@@ -26,4 +26,11 @@ spec:
     matchExpressions:
     - key: k8s-app
       operator: Exists
+  storage:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: nfs
+        resources:
+          requests:
+            storage: 10Gi
   version: v2.3.1
