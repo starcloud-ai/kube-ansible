@@ -82,7 +82,7 @@ package:
   nvidia_docker:
     name: nvidia-docker
     dir: /opt/nvidia-docker
-    url: "{{ base.nvidia_docker.url }}/kairen/k8s-manual-files/releases/download/nvidia"
+    url: "{{ base.nvidia_docker.url }}/starcloud-ai/external-libs/releases/download/nvidia"
     unarchive:
       extra_opt: "['--strip-components=1']"
     symlinks:
@@ -91,16 +91,16 @@ package:
   libnvidia_container:
     name: libnvidia-container
     dir: /opt/libnvidia-container
-    url: "{{ base.libnvidia_container.url }}/kairen/k8s-manual-files/releases/download/nvidia"
+    url: "{{ base.libnvidia_container.url }}/starcloud-ai/external-libs/releases/download/nvidia"
     unarchive:
       extra_opt: "['--strip-components=1']"
     symlinks:
       - usr/local/bin/nvidia-container-cli
-    file: "libnvidia-container-{{ base.libnvidia_container.version }}_amd64.tar.xz"
+    file: "libnvidia-container-{{ base.libnvidia_container.version }}_x86_64-{{ 'ubuntu' if ansible_os_family is defined and ansible_os_family == 'Debian' else 'centos' }}.tar.xz"
   nvidia_container_runtime:
     name: nvidia-container-runtime
     dir: /opt/nvidia-container-runtime
-    url: "{{ base.nvidia_container_runtime.url }}/kairen/k8s-manual-files/releases/download/nvidia"
+    url: "{{ base.nvidia_container_runtime.url }}/starcloud-ai/external-libs/releases/download/nvidia"
     unarchive:
       extra_opt: "['--strip-components=1']"
     symlinks:

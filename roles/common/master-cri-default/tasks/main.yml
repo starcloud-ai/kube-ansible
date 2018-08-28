@@ -1,0 +1,6 @@
+---
+
+- set_fact:
+    container_runtime: 'docker'
+  when: container_runtime == 'nvidia-docker' and ansible_host not in groups['nodes']
+

@@ -10,4 +10,4 @@ environment = []
 load-kmods = true
 #no-cgroups = false
 #user = "root:video"
-ldconfig = "@/sbin/ldconfig.real"
+ldconfig = "{{ '@/sbin/ldconfig.real' if ansible_os_family is defined and ansible_os_family == 'Debian' else '@/sbin/ldconfig' }}"
