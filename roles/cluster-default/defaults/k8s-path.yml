@@ -3,6 +3,7 @@
 etc_dir: /etc/kubernetes
 manifest_dir: /etc/kubernetes/manifests
 addon_dir: /etc/kubernetes/addons
+cronjob_dir: /etc/kubernetes/cronjobs
 kubelet_config_dir: /var/lib/kubelet
 cni_etc_dir: /etc/cni/net.d
 cni_bin_dir: /opt/cni/bin

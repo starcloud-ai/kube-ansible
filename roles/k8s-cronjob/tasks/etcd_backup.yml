@@ -1,0 +1,24 @@
+---
+- name: test
+  shell: ls {{ etcd_ca }}
+
+- name: read pem files
+  command: cat {{ etcd_ca }}
+  register: ca
+
+- name: read pem files
+  command: cat {{ etcd_cert }}
+  register: cert
+
+- name: read pem files
+  command: cat {{ etcd_cert_key }}
+  register: key
+
+- name: "Ensure cronjob directory exists"
+  file: path="{{ cronjob_dir }}" state=directory
+
+- name: copy etcd_backup
+  template:
+    src: "etcd-cronjob.yml.j2"
+    dest: "{{ cronjob_dir }}/etcd-cronjob.yml"
+  
