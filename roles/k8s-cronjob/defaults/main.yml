@@ -1,0 +1,10 @@
+---
+
+cronjobs:
+  etcd_backup:
+    name: etcd_backup
+    dirs:
+      - etcd_backup
+    templates:
+      - etcd-cronjob.yml
+  

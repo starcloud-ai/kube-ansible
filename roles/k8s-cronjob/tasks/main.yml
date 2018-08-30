@@ -1,0 +1,9 @@
+---
+
+- name: "Ensure cronjob directory exists"
+  file: path="{{ cronjob_dir }}" state=directory
+  
+- name: add etcd backup crontjob
+  include_tasks: etcd_backup.yml
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true

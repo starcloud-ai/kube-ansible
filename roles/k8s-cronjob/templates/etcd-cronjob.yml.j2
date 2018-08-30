@@ -1,0 +1,89 @@
+{% macro etcd_initial_cluster() -%}
+{% for host in groups['etcds'] -%}
+  https://
+  {%- if etcd_iface != "" -%}
+    {{ hostvars[host]['ansible_' + etcd_iface].ipv4.address }}
+  {%- else -%}
+    {{ hostvars[host].ansible_default_ipv4.address }}
+  {%- endif -%}
+:2379
+  {%- if not loop.last -%},{%- endif -%}
+{%- endfor -%}
+{% endmacro -%}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: etcd-backup-cron
+  namespace: kube-system
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: etcd-backup-cron
+            image: quay.io/coreos/etcd:v3.3.8
+            command: ["etcdctl","snapshot", "save", "/tmp/snapshot.db"]
+            env:
+            - name: ETCDCTL_API
+              value: "3"
+            args:
+            - --endpoints={{ etcd_initial_cluster() }}
+            - --cacert={{ etcd_pki_dir }}/ca.pem
+            - --cert={{ etcd_pki_dir }}/cert.pem
+            - --key={{ etcd_pki_dir }}/key.pem
+            volumeMounts:
+            - name: etcd-ca-certs
+              mountPath: {{ etcd_pki_dir }}
+              readOnly: true
+            - name: etcd-backup
+              mountPath: /tmp
+          volumes:
+          - name: etcd-ca-certs
+            configMap:
+              name: etcd-cert-config
+          - name: etcd-backup
+            {% if not logging.elasticsearch.storage_class_name -%}
+            emptyDir: {}
+            {% else -%}
+            persistentVolumeClaim:
+              claimName: etcd-backup
+            {% endif %}
+          restartPolicy: OnFailure
+{% if logging.elasticsearch.storage_class_name -%}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: elasticsearch-logging
+  namespace: kube-system
+  labels:
+    k8s-app: elasticsearch-logging
+spec:
+  storageClassName: {{ logging.elasticsearch.storage_class_name }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ logging.elasticsearch.storage_size }}
+{% endif -%}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: etcd-cert-config
+  namespace: kube-system
+data:
+  ca.pem: |
+{% for item in ca.stdout_lines %}
+    {{ item }}
+{% endfor %}
+  cert.pem: |
+{% for item in cert.stdout_lines%}
+    {{ item }}
+{% endfor %}
+  key.pem: |
+{% for item in key.stdout_lines%}
+    {{ item }}
+{% endfor %}
