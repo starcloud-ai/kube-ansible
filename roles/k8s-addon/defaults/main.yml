@@ -43,7 +43,8 @@ addons:
       - metric-server/metrics-server-dp.yml
   ingress_nginx:
     name: ingress-nginx
-    dirs: - ingress-nginx
+    dirs: 
+      - ingress-nginx
     dependencies:
       - name: ingress-nginx
         kind: ns
