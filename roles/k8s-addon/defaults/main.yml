@@ -43,8 +43,7 @@ addons:
       - metric-server/metrics-server-dp.yml
   ingress_nginx:
     name: ingress-nginx
-    dirs:
-      - ingress-nginx
+    dirs: - ingress-nginx
     dependencies:
       - name: ingress-nginx
         kind: ns
@@ -146,6 +145,8 @@ addons:
       - tiller
     templates:
       - tiller/tiller-rbac.yml
+      - tiller/tiller-dp.yml
+      - tiller/tiller-svc.yml
   nfs_client:
     name: nfs_client
     dirs:

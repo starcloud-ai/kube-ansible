@@ -1,8 +1,0 @@
----
-
-- name: Init helm server
-  shell: |
-    KUBECONFIG={{ admin_kubeconfig }} {{ bin_dir }}/helm init --service-account tiller
-  delegate_to: "{{ groups['masters'][0] }}"
-  run_once: true
-  ignore_errors: true
