@@ -1,4 +1,0 @@
----
-
-dependencies:
-  - { role: download/package, when: addon is defined and addon.name == 'helm', pkg: "{{ package.helm }}" }

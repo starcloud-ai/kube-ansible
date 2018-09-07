@@ -88,6 +88,3 @@
   until: apply_addon.rc == 0
   retries: 10
   delay: 2
-
-- when: addon.name == 'helm'
-  include_tasks: init-helm.yml
