@@ -64,11 +64,17 @@
   delay: 2
   ignore_errors: true
 
+- name: Copy nivida device plugin template
+  template: src=nvidia-device-plugin.yml.j2 dest="{{ cache_dir }}/nvidia-device-plugin.yml"
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true
+  register: copy_nvidia_device_plugin_file
+
 - name: Create nvidia device plugin daemonset
-  when: container_runtime == 'nvidia-docker' and service_started
+  when: container_runtime == 'nvidia-docker' and service_started and copy_nvidia_device_plugin_file
   command: |
     {{ bin_dir }}/kubectl --kubeconfig={{ admin_kubeconfig }} \
-      apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.{{ kube_version.split(".")[1] }}/nvidia-device-plugin.yml
+      apply -f {{ cache_dir }}/nvidia-device-plugin.yml
   delegate_to: "{{ groups['masters'][0] }}"
   run_once: true
   register: create_result

@@ -158,3 +158,10 @@ addons:
       - nfs-client/clusterrolebinding.yaml
       - nfs-client/deployment.yaml
       - nfs-client/class.yaml
+  k8s-rdma-sriov-plugin:
+    name: k8s-rdma-sriov-plugin
+    dirs:
+      - k8s-rdma-sriov-plugin
+    templates:
+      - device-plugin.yaml
+      - rdma-sriov-node-config.yml

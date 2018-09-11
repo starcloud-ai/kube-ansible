@@ -1,6 +1,7 @@
 ---
 
 dependencies:
+  - { role: common/nvidia-check }
   - { role: download/package, pkg: "{{ package.cni }}" }
   - { role: download/package, pkg: "{{ package.kubelet }}" }
   - { role: download/library, pkg: "{{ library.socat }}" }
