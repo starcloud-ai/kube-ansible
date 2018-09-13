@@ -13,3 +13,4 @@
   - { role: k8s-addon, tags: metric-server, when: enable_metric_server, addon: "{{ addons.metric_server }}" }
   - { role: k8s-addon, tags: helm,          when: enable_helm,          addon: "{{ addons.helm }}" }
   - { role: k8s-addon, tags: nfs-client,    when: enable_nfs_client,    addon: "{{ addons.nfs_client }}" }
+  - { role: k8s-addon, tags: k8s-rdma-sriov-plugin,    when: enable_k8s_rdma_sriov_plugin,    addon: "{{ addons.k8s-rdma-sriov-plugin}}" }
