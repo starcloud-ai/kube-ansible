@@ -6,6 +6,9 @@
 - name: Ensure cni config directory exists
   file: path={{ cni_etc_dir }} state=directory
 
+- name: Ensure Kubernetes manifests directory exists
+  file: path={{ manifest_dir }} state=directory
+
 - name: Copy kubelet config template
   template:
     src: "kubelet-config.yml.j2"
