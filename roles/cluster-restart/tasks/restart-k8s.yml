@@ -1,0 +1,8 @@
+---
+
+- name: restart kubelet systemd service
+  systemd: 
+    name: kubelet.service 
+    state: restarted
+  ignore_errors: True
+  register: restart_kubelet_service

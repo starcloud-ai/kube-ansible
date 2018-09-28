@@ -1,0 +1,5 @@
+---
+
+- name: Restart Kubernetes cluster
+  when: restart_k8s|default(false)
+  include_tasks: restart-k8s.yml

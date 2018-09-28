@@ -1,0 +1,8 @@
+---
+
+- hosts: "{{ hosts | default('kube-cluster') }}"
+  become: true
+  tags: restart_k8s
+  roles:
+    - { role: cluster-restart, restart_k8s: true }
+
