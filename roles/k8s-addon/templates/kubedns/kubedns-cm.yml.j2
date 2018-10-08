@@ -10,6 +10,9 @@ data:
            fallthrough in-addr.arpa ip6.arpa
         }
         prometheus :9153
+        {%- if ingress_domain != "" -%}
+        forward {{ ingress_domain }} {{ ingress_lb_address }}:53
+        {%- endif -%}
         proxy . /etc/resolv.conf
         cache 30
         reload

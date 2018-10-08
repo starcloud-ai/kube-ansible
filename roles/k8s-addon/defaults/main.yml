@@ -158,3 +158,23 @@ addons:
       - nfs-client/clusterrolebinding.yaml
       - nfs-client/deployment.yaml
       - nfs-client/class.yaml
+  external_dns:
+    name: external_dns
+    dirs:
+      - external-dns/coredns
+      - external-dns/external-dns
+    dependencies:
+      - name: external-dns
+        kind: ns
+        files:
+          - external-dns/external-dns-ns.yml
+    templates:
+      - external-dns/coredns/coredns-cm.yml
+      - external-dns/coredns/coredns-dp.yml
+      - external-dns/coredns/coredns-svc-tcp.yml
+      - external-dns/coredns/coredns-svc-udp.yml
+      - external-dns/coredns/etcd-dp.yml
+      - external-dns/coredns/etcd-svc.yml
+      - external-dns/external-dns/externa-dns-sa.yml
+      - external-dns/external-dns/external-dns-rbac.yml
+      - external-dns/external-dns/external-dns.yml
