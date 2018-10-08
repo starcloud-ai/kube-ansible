@@ -97,21 +97,21 @@ spec:
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
-  name: flannel-conf
+  name: sriov-conf
 spec: 
   config: '{
       "name": "mynet",
       "type": "sriov",
-      "if0": "INVALID_IFACE",
+      "if0": "{{ pfNetdevices[0] }}",
       "ipam": {
           "type": "host-local",
-          "subnet": "10.55.206.0/26",
-          "rangeStart": "10.55.206.1",
-          "rangeEnd": "10.55.206.8",
+          "subnet": "10.56.217.0/24",
+          "rangeStart": "10.56.217.171",
+          "rangeEnd": "10.56.217.181",
           "routes": [
-              { "dst": "0.0.0.0/0" }
+                    { "dst": "0.0.0.0/0" }
           ],
-          "gateway": "10.55.206.1"
+          "gateway": "10.56.217.1"
       }
     }'
 ---
