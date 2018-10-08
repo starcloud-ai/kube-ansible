@@ -27,6 +27,7 @@ enable_monitoring: false
 enable_metric_server: false
 enable_nfs_client: false
 enable_helm: false
+enable_docker_registry: false
 
 grafana_user: "admin"
 grafana_password: "p@ssw0rd"
@@ -47,3 +48,8 @@ monitoring:
     ingress_host: "prometheus.local.ai"
   grafana:
     ingress_host: "grafana.local.ai"
+
+docker_registry:
+  ingress_host: "registry.local.ai"
+  storage_class_name: "nfs"
+  storage_size: "10Ti"

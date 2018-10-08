@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: registry
+  labels:
+    app: registry
+  namespace: docker-registry
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: registry
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+      - name: registry
+        image: registry:2
+        ports:
+        - containerPort: 5080
+        volumeMounts:
+        - mountPath: /var/lib/registry
+          name: registry
+      volumes:
+      - name: registry
+        persistentVolumeClaim:
+          claimName: registry
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: registry
+  namespace: docker-registry
+  labels:
+    k8s-app: registry
+spec:
+  storageClassName: {{ docker-registry.storage_class_name }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ docker-registry.storage_size }}
