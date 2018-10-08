@@ -144,27 +144,5 @@ spec:
         - name: multus-cfg
           configMap:
             name: multus-cni-config
----
-apiVersion: "k8s.cni.cncf.io/v1"
-kind: NetworkAttachmentDefinition
-metadata:
-  name: macvlan-conf
-spec: 
-  config: '{
-      "cniVersion": "0.3.0",
-      "type": "macvlan",
-      "master": "{{ ansible_default_ipv4.interface }}",
-      "mode": "bridge",
-      "ipam": {
-        "type": "host-local",
-        "subnet": "192.168.10.0/24",
-        "rangeStart": "192.168.10.200",
-        "rangeEnd": "192.168.10.216",
-        "routes": [
-          { "dst": "0.0.0.0/0" }
-        ],
-        "gateway": "192.168.10.1"
-      }
-    }'
----
-{% include ["multus/macvlan4multus.yml.j2", "multus/flanel4multus.yml.j2", "multus/sriov4multus.yml.j2"] ignore missing %}
+
+{% include ["multus/macvlan4multus.yml.j2", "multus/flannel4multus.yml.j2", "multus/sriov4multus.yml.j2"] ignore missing %}
