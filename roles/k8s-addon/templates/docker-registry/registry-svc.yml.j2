@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Service
+metadata:
+  name: registry
+  labels:
+    app: registry
+  namespace: docker-registry
+spec:
+  ports:
+  - port: 5000
+    targetPort: 5000
+  selector:
+    app: registry
