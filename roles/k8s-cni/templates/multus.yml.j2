@@ -145,4 +145,6 @@ spec:
           configMap:
             name: multus-cni-config
 
-{% include ["multus/macvlan4multus.yml.j2", "multus/flannel4multus.yml.j2", "multus/sriov4multus.yml.j2"] ignore missing %}
+{% include "multus/macvlan4multus.yml.j2" %}
+{% include "multus/flannel4multus.yml.j2" %}
+{% include "multus/sriov4multus.yml.j2" %}
