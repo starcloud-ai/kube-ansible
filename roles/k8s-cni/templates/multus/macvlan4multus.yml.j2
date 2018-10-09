@@ -9,7 +9,7 @@ spec:
       "type": "macvlan",
       "master": "{{ ansible_default_ipv4.interface }}",
       "mode": "bridge",
-      "ipam": "{{ macvlan_ipam_config }}"
+      "ipam": {{ macvlan_ipam_config }}
     }'
 ---
 apiVersion: "k8s.cni.cncf.io/v1"

@@ -1,5 +1,5 @@
 ---
-sriov_ipam_config: {
+sriov_ipam_config: '{
           "type": "host-local",
           "subnet": "10.56.217.0/24",
           "rangeStart": "10.56.217.171",
@@ -8,9 +8,9 @@ sriov_ipam_config: {
                     { "dst": "0.0.0.0/0" }
           ],
           "gateway": "10.56.217.1"
-      }
+      }'
 
-macvlan_ipam_config: {
+macvlan_ipam_config: '{
         "type": "host-local",
         "subnet": "192.168.10.0/24",
         "rangeStart": "192.168.10.200",
@@ -19,4 +19,4 @@ macvlan_ipam_config: {
           { "dst": "0.0.0.0/0" }
         ],
         "gateway": "192.168.10.1"
-      }
+      }'

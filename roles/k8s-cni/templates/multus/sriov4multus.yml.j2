@@ -103,5 +103,5 @@ spec:
       "name": "mynet",
       "type": "sriov",
       "if0": "{{ pfNetdevices[0] }}",
-      "ipam": "{{ sriov_ipam_config }}"
+      "ipam": {{ sriov_ipam_config }}
     }'
