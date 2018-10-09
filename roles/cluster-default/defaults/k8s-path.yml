@@ -7,6 +7,7 @@ cronjob_dir: /etc/kubernetes/cronjobs
 kubelet_config_dir: /var/lib/kubelet
 cni_etc_dir: /etc/cni/net.d
 cni_bin_dir: /opt/cni/bin
+cni_ipam_host_local_path: /var/lib/cni/networks
 audit_policy_dir: /etc/kubernetes/audit
 audit_log_dir: /var/log/kubernetes
 encryption_config_dir: /etc/kubernetes/encryption

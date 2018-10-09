@@ -56,6 +56,7 @@
   with_items:
     - "{{ etc_dir }}"
     - "{{ cni_etc_dir }}"
+    - "{{ cni_ipam_host_local_path }}"
     - "{{ kubelet_config_dir }}"
     - "{{ audit_log_dir }}"
     - "{{ haproxy_config_dir }}"
