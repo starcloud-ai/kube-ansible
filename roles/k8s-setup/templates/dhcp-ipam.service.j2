@@ -1,0 +1,16 @@
+[Unit]
+Description=The DHCP IPAM Agent
+Documentation=https://github.com/containernetworking/plugins/tree/master/plugins/ipam/dhcp
+
+[Service]
+ExecStartPre=/bin/rm -f /run/cni/dhcp.sock
+ExecStart=/opt/cni/bin/dhcp daemon
+Restart=on-failure
+StartLimitBurst=3
+StartLimitInterval=60s
+RestartSec=10
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+Alias=dhcp-ipam.service
