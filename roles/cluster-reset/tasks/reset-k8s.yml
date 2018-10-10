@@ -5,6 +5,11 @@
   ignore_errors: True
   register: stop_kubelet_service
 
+- name: Stop dhcp-ipam systemd service
+  systemd: name=dhcp-ipam.service state=stopped enabled=no
+  ignore_errors: True
+  register: stop_dhcp-ipam_service
+
 - name: Stop docker containers
   when: container_runtime == 'docker' or container_runtime == 'nvidia-docker'
   shell: "{{ bin_dir }}/docker stop $(docker ps -aq) "
