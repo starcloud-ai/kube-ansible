@@ -11,12 +11,5 @@ sriov_ipam_config: '{
       }'
 
 macvlan_ipam_config: '{
-        "type": "host-local",
-        "subnet": "192.168.10.0/24",
-        "rangeStart": "192.168.10.200",
-        "rangeEnd": "192.168.10.216",
-        "routes": [
-          { "dst": "0.0.0.0/0" }
-        ],
-        "gateway": "192.168.10.1"
+        "type": "dhcp"
       }'
