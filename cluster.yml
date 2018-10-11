@@ -41,5 +41,5 @@
   become: true
   gather_facts: false
   roles:
-    - { role: cluster-default }
-    - { role: k8s-cni, when: cni_enable }
+    - { role: cluster-default, tags: k8s-cni }
+    - { role: k8s-cni, when: cni_enable, tags: k8s-cni }
