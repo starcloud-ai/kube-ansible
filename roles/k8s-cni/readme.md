@@ -8,6 +8,49 @@
 
 使用Mellanox的网卡，有两种工作模式，hca是其中的一种。这种工作模式基本就是将Mellanox网卡作为一块普通网卡来，需要配合calico来进行使用。
 
+### 测试
+
+```text
+cat <<EOF |kubectl create -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mofed-test-pod-4
+spec:
+  restartPolicy: OnFailure
+  containers:
+  - image: 192.168.1.150:5000/mellanox/centos_7_4_mofed_4_2_1_2_0_0_60
+    name: mofed-test-ctr-4
+    securityContext:
+      capabilities:
+        add: [ "IPC_LOCK" ]
+    resources:
+      limits:
+        rdma/hca: 1
+    command:
+    - sh
+    - -c
+    - |
+      ls -l /dev/infiniband /sys/class/net
+      sleep 1000000
+EOF
+```
+
+使用hca模式时，要在container的配置中要增加`rdma/hca`，这时`Mellanox`的插件程序会将宿主机上的`/dev/infiniband` 作为`device`挂载到容器上。
+
+```
+docker inspect <container-id>
+...
+            "Devices": [
+                {
+                    "PathOnHost": "/dev/infiniband",
+                    "PathInContainer": "/dev/infiniband",
+                    "CgroupPermissions": "rwm"
+                }
+            ],
+...
+```
+
 ## sriov
 
 使用Mellanox的网卡的另一种工作模式。它可以将一块物理网卡，虚拟出多块网卡，然后在物理网卡内部实现多块虚拟网卡的路由。
