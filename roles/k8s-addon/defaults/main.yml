@@ -168,3 +168,23 @@ addons:
       - docker-registry/registry-ns.yml
       - docker-registry/registry-secret.yml
       - docker-registry/registry-svc.yml
+  external_dns:
+    name: external_dns
+    dirs:
+      - external-dns/coredns
+      - external-dns/external-dns
+    dependencies:
+      - name: external-dns
+        kind: ns
+        files:
+          - external-dns/external-dns-ns.yml
+    templates:
+      - external-dns/coredns/coredns-cm.yml
+      - external-dns/coredns/coredns-dp.yml
+      - external-dns/coredns/coredns-svc-tcp.yml
+      - external-dns/coredns/coredns-svc-udp.yml
+      - external-dns/coredns/etcd-dp.yml
+      - external-dns/coredns/etcd-svc.yml
+      - external-dns/external-dns/externa-dns-sa.yml
+      - external-dns/external-dns/external-dns-rbac.yml
+      - external-dns/external-dns/external-dns.yml

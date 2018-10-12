@@ -28,6 +28,9 @@ enable_metric_server: false
 enable_nfs_client: false
 enable_helm: false
 enable_docker_registry: false
+enable_external_dns: false
+
+ingress_domain: "k8s.local"
 
 grafana_user: "admin"
 grafana_password: "p@ssw0rd"
@@ -53,3 +56,6 @@ docker_registry:
   ingress_host: "registry.local.ai"
   storage_class_name: "nfs"
   storage_size: "10Ti"
+
+external_dns:
+  dns_vip: {{ vip_address }}
