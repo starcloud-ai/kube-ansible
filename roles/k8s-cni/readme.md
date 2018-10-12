@@ -1,15 +1,29 @@
-# multus
+# cni
 
-## 什么是multus
+## flannel
+
+## calico
+
+## hca
+
+使用Mellanox的网卡，有两种工作模式，hca是其中的一种。这种工作模式基本就是将Mellanox网卡作为一块普通网卡来，需要配合calico来进行使用。
+
+## sriov
+
+使用Mellanox的网卡的另一种工作模式。它可以将一块物理网卡，虚拟出多块网卡，然后在物理网卡内部实现多块虚拟网卡的路由。
+
+## multus
+
+### 什么是multus
 
 默认情况下，kuberenets只会从/etc/cni/conf中寻找一个插件使用，无法灵活使用多种CNI。同时，对于主机上有多块网卡的话，只能使用到其中一块。multus就是用来解决上述问题的。通过代理的方式，multus调用其他cni插件，在pod创建的过程中，为其创建多张网卡，每张网卡都属于一个CNI插件的网络。
 
-## 支持范围
+### 支持范围
 
 目前可以支持的CNI有 sriov、macvlan、flannel。calico暂时还在测试中。
 其中flannel目前作为默认的网络。也就是说，默认的网络是由flannel提供的，其他的网络需要在创建pod的时候，通过annotation添加。
 
-## CNI插件的配置
+### CNI插件的配置
 
 首先/etc/cni/conf 目录下只需要有multus的cni配置。或者说，multus的cni配置要有最高的优先级。
 对于multus要使用的CNI插件，他们的CNI配置都通过configmap保存在kubernetes中。
@@ -47,9 +61,9 @@ EOF
 在实际使用过程中，sriov、macvlan要使用DHCP来动态获取地址。官方示例中使用的都是"host-local"。会导致不同节点上的容器有相同的IP地址。
 flannel 使用默认配置就可以了。因为在flannel的设计中，不同的服务器上的容器属于不同的子网。不会有不同节点上出现相同IP地址的事情。
 
-## 测试
+### 测试
 
-### macvlan 的测试
+#### macvlan 的测试
 
 1. 重复创建多个使用macvlan的pod  
     ```text
@@ -118,7 +132,7 @@ flannel 使用默认配置就可以了。因为在flannel的设计中，不同�
     * net1  
       由macvlan创建，ip地址由DHCP服务分配
 
-### sriov 的测试
+#### sriov 的测试
 
 1. 重复创建多个使用sriov的pod  
     ```text
@@ -207,3 +221,4 @@ flannel 使用默认配置就可以了。因为在flannel的设计中，不同�
       由flannel-conf创建
     * net2
       由sriov创建，ip地址由DHCP服务分配
+
