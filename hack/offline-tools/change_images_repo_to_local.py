@@ -13,7 +13,9 @@ repo_pattern = [
     "(^ *)image: *docker.elastic.co/(.*)",
     "(^ *)image: *(.*)",
     "(^ *)- *image: *(.*)",
+    "(^ *)image: *registry.opensource.zalan.do/(.*)",
     "(^.*)=quay.io/coreos/(.*$)",
+    "(^ *)image: *(.*)",
 ]
 
 new_repo_format = {
@@ -26,7 +28,8 @@ new_repo_format = {
     "(^ *)image: *docker.elastic.co/(.*)": "%simage: %s/%s\n",
     "(^ *)image: *(.*)": "%simage: %s/%s\n",
     "(^ *)- *image: *(.*)": "%s- image: %s/%s\n",
-    "(^.*)=quay.io/coreos/(.*$)": "%s=%s/coreos/%s\n"
+    "(^.*)=quay.io/coreos/(.*$)": "%s=%s/coreos/%s\n",
+    "(^ *)image: *registry.opensource.zalan.do/(.*)": "%simage: %s/%s\n",
 }
 
 repo_pattern_obj = {}
@@ -48,9 +51,9 @@ def process_file(filename, repo):
 
     with open(filename) as istream:
         content = istream.readlines()
-    
+
     repo_pattern_obj[re.compile("(^ *)image: *"+repo+"/(.*)")] = False
-    
+
     for line in content:
         bck, newline = process_line(filename, line, repo)
         newcontent.append(newline)
@@ -59,7 +62,7 @@ def process_file(filename, repo):
         elif bck:
             needbackup = True
 
-    if needbackup:
+    if needbackup & 0:
         with open(filename+"_bak", "w") as backup:
             backup.writelines(content)
 
@@ -72,7 +75,7 @@ def main():
     parser.add_argument("-r", "--repo", type=str, default="{{ localrepo }}", dest="repo")
 
     args = parser.parse_args()
-    
+
     for p in repo_pattern:
         repo_pattern_obj[p] = (re.compile(p), True)
 
