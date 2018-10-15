@@ -14,3 +14,4 @@
   - { role: k8s-addon, tags: helm,          when: enable_helm,          addon: "{{ addons.helm }}" }
   - { role: k8s-addon, tags: nfs-client,    when: enable_nfs_client,    addon: "{{ addons.nfs_client }}" }
   - { role: k8s-addon, tags: docker-registry,    when: enable_docker_registry,    addon: "{{ addons.docker_registry }}" }
+  - { role: k8s-addon, tags: external-dns,    when: enable_external_dns,    addon: "{{ addons.external_dns }}" }
