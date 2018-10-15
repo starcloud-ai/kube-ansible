@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: v1
 kind: Ingress
 metadata:
   name: registry-tls
@@ -13,10 +13,10 @@ metadata:
 spec:
   tls:
   - hosts:
-      - {{ docker-registry.ingress_host }}
+      - {{ docker_registry.ingress_host }}
   - secretName: registry-tls
   rules:
-  - host: {{ docker-registry.ingress_host }}
+  - host: {{ docker_registry.ingress_host }}
     http:
       paths:
       - backend:
