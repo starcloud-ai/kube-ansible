@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: v1
 kind: Deployment
 metadata:
   name: registry
@@ -36,9 +36,9 @@ metadata:
   labels:
     k8s-app: registry
 spec:
-  storageClassName: {{ docker-registry.storage_class_name }}
+  storageClassName: {{ docker_registry.storage_class_name }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ docker-registry.storage_size }}
+      storage: {{ docker_registry.storage_size }}
