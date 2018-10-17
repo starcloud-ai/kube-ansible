@@ -265,3 +265,191 @@ flannel 使用默认配置就可以了。因为在flannel的设计中，不同�
     * net2
       由sriov创建，ip地址由DHCP服务分配
 
+### 性能测试
+
+#### 测试环境
+
+##### 硬件
+
+##### 软件
+
+#### 使用 iperf 测试 sriov
+
+1. 镜像准备
+    因为`mellanox/centos_7_4_mofed_4_2_1_2_0_0_60`里只有`perftest` 没有`iperf3`所以需要自己制作镜像
+    ```text
+    git clone https://github.com/starcloud-ai/mofed_dockerfiles.git
+    cd mofed_dockerfiles
+    cp Dockerfile.centos7.2.mofed-4.4 Dockerfile
+    docker build -t mofed_test .
+    docker save mofed_test|gzip -c > mofed_test.tar.gz
+    scp mofed_test.tar.gz ubuntu@192.168.1.150:/tmp
+    ssh ubuntu@192.168.1.150 "docker load < /tmp/mofed_test.tar.gz"
+    ssh ubuntu@192.168.1.160 "docker tag mofed_test 192.168.1.150:5000/mofed_test"
+    ssh ubuntu@192.168.1.160 "docker push 192.168.1.150:5000/mofed_test"
+    ```
+
+2. 使用`mofed_test`创建4个pod
+
+    ```text
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: iperf-server
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+                { "name": "sriov-conf" }
+        ]'
+    spec:  # specification of the pod's contents
+      containers:
+      - name: iperf-server
+        image: "192.168.1.150:5000/mofed_test"
+        command: ["/bin/bash", "-c", "sleep 2000000000000"]
+        stdin: true
+        tty: true
+    ---
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: iperf-client-1
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+                { "name": "sriov-conf" }
+        ]'
+    spec:  # specification of the pod's contents
+      containers:
+      - name: iperf-client-1
+        image: "192.168.1.150:5000/mofed_test"
+        command: ["/bin/bash", "-c", "sleep 2000000000000"]
+        stdin: true
+        tty: true
+    ---
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: iperf-client-2
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+                { "name": "sriov-conf" }
+        ]'
+    spec:  # specification of the pod's contents
+      containers:
+      - name: iperf-client-2
+        image: "192.168.1.150:5000/mofed_test"
+        command: ["/bin/bash", "-c", "sleep 2000000000000"]
+        stdin: true
+        tty: true
+    ---
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: iperf-client-3
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+                { "name": "sriov-conf" }
+        ]'
+    spec:  # specification of the pod's contents
+      containers:
+      - name: iperf-client-3
+        image: "192.168.1.150:5000/mofed_test"
+        command: ["/bin/bash", "-c", "sleep 2000000000000"]
+        stdin: true
+        tty: true
+    ```
+
+3. 在sriov网卡上启动iperf server
+    ```text
+    # 查看网卡
+    kubectl exec -it iperf-server ip a
+
+    # 在sriov网卡上启动iperf server
+    kubectl exec -it iperf-server -- /usr/bin/iperf3 --bind 10.0.0.89 -s
+    ```
+
+4. 选取client pod执行测试
+    ```text
+    # 单线程测试tcp
+    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -c 10.0.0.89
+    ......
+    [ ID] Interval           Transfer     Bitrate         Retr
+    [  5]   0.00-10.00  sec  21.3 GBytes  18.3 Gbits/sec  436             sender
+    [  5]   0.00-10.04  sec  21.3 GBytes  18.2 Gbits/sec                  receiver
+
+    # 多线程测试tcp
+    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -c 10.0.0.89 -P 4
+    ......
+    [ ID] Interval           Transfer     Bitrate         Retr
+    [  5]   0.00-10.00  sec  5.58 GBytes  4.80 Gbits/sec    0             sender
+    [  5]   0.00-10.03  sec  5.58 GBytes  4.78 Gbits/sec                  receiver
+    [  7]   0.00-10.00  sec  5.62 GBytes  4.83 Gbits/sec    0             sender
+    [  7]   0.00-10.03  sec  5.61 GBytes  4.81 Gbits/sec                  receiver
+    [  9]   0.00-10.00  sec  5.62 GBytes  4.83 Gbits/sec    0             sender
+    [  9]   0.00-10.03  sec  5.61 GBytes  4.81 Gbits/sec                  receiver
+    [ 11]   0.00-10.00  sec  5.58 GBytes  4.80 Gbits/sec    0             sender
+    [ 11]   0.00-10.03  sec  5.58 GBytes  4.78 Gbits/sec                  receiver
+    [SUM]   0.00-10.00  sec  22.4 GBytes  19.2 Gbits/sec    0             sender
+    [SUM]   0.00-10.03  sec  22.4 GBytes  19.2 Gbits/sec                  receiver
+
+    # 单线程测试udp
+    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.0.0.89
+    ......
+    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+    [  5]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/906 (0%)  sender
+    [  5]   0.00-10.04  sec  1.25 MBytes  1.05 Mbits/sec  0.006 ms  0/906 (0%)  receiver
+
+    # 多线程测试udp
+    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.0.0.89 -P 4
+    ......
+    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+    [  5]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/906 (0%)  sender
+    [  5]   0.00-10.04  sec  1.25 MBytes  1.05 Mbits/sec  0.005 ms  0/906 (0%)  receiver
+    [  7]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/906 (0%)  sender
+    [  7]   0.00-10.04  sec  1.25 MBytes  1.05 Mbits/sec  0.005 ms  0/906 (0%)  receiver
+    [  9]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/906 (0%)  sender
+    [  9]   0.00-10.04  sec  1.25 MBytes  1.05 Mbits/sec  0.002 ms  0/906 (0%)  receiver
+    [ 11]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/906 (0%)  sender
+    [ 11]   0.00-10.04  sec  1.25 MBytes  1.05 Mbits/sec  0.005 ms  0/906 (0%)  receiver
+    [SUM]   0.00-10.00  sec  5.00 MBytes  4.20 Mbits/sec  0.000 ms  0/3624 (0%)  sender
+    [SUM]   0.00-10.04  sec  5.00 MBytes  4.18 Mbits/sec  0.004 ms  0/3624 (0%)  receiver
+
+    # 单线程测试udp，增加带宽参数
+    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.0.0.89 -b 100G
+    ......
+    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+    [  5]   0.00-10.00  sec  2.94 GBytes  2.53 Gbits/sec  0.000 ms  0/2179770 (0%)  sender
+    [  5]   0.00-10.04  sec  2.27 GBytes  1.94 Gbits/sec  0.009 ms  494436/2179699 (23%)  receiver
+
+    # 多线程测试udp，增加带宽参数
+    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.0.0.89 -P 4 -b 100G
+    ......
+    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+    [  5]   0.00-10.00  sec  1.12 GBytes   961 Mbits/sec  0.000 ms  0/829989 (0%)  sender
+    [  5]   0.00-10.04  sec   959 MBytes   801 Mbits/sec  0.002 ms  135476/829923 (16%)  receiver
+    [  7]   0.00-10.00  sec  1.12 GBytes   961 Mbits/sec  0.000 ms  0/829993 (0%)  sender
+    [  7]   0.00-10.04  sec   960 MBytes   802 Mbits/sec  0.002 ms  134535/829926 (16%)  receiver
+    [  9]   0.00-10.00  sec  1.12 GBytes   961 Mbits/sec  0.000 ms  0/829993 (0%)  sender
+    [  9]   0.00-10.04  sec   958 MBytes   801 Mbits/sec  0.002 ms  135872/829926 (16%)  receiver
+    [ 11]   0.00-10.00  sec  1.12 GBytes   961 Mbits/sec  0.000 ms  0/829853 (0%)  sender
+    [ 11]   0.00-10.04  sec   976 MBytes   815 Mbits/sec  0.002 ms  123237/829787 (15%)  receiver
+    [SUM]   0.00-10.00  sec  4.48 GBytes  3.85 Gbits/sec  0.000 ms  0/3319828 (0%)  sender
+    [SUM]   0.00-10.04  sec  3.76 GBytes  3.22 Gbits/sec  0.002 ms  529120/3319562 (16%)  receiver
+
+    ```
+
+#### 使用 perftest 测试 hca
+
+1. 镜像准备
+    使用上面生成的`mofed_test`镜像
+
+2. 使用`mofed_test`创建4个pod
+    使用上面的yaml创建4个pod
+
+3. 使用iperf测试ip2ib网卡性能
+   1. 启动iperf server
+   2. 选取client pod执行测试
+4. 使用perftest测试hca
+
+参考：
+
+https://www.iyunv.com/thread-274855-1-1.html  
+https://www.cnblogs.com/yingsong/p/5682080.html  
