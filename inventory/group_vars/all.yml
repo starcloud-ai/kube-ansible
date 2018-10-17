@@ -7,7 +7,7 @@ kube_version: 1.11.2
 container_runtime: docker
 
 # Container network,
-# Supported: calico, flannel.
+# Supported: calico, flannel, sriov, multus, hca.
 cni_enable: true
 container_network: calico
 cni_iface: ""
@@ -41,19 +41,19 @@ nfs_storage_class: "nfs"
 
 logging:
   kibana:
-    ingress_host: "kibana.local.ai"
+    ingress_host: "kibana.{{ ingress_domain }}"
   elasticsearch:
     storage_class_name: "nfs"
-    storage_size: "10Gi"
+    storage_size: "200Gi"
 
 monitoring:
   prometheus:
-    ingress_host: "prometheus.local.ai"
+    ingress_host: "prometheus.{{ ingress_domain }}"
   grafana:
-    ingress_host: "grafana.local.ai"
+    ingress_host: "grafana.{{ ingress_domain }}"
 
 docker_registry:
-  ingress_host: "registry.local.ai"
+  ingress_host: "registry.{{ ingress_domain }}"
   storage_class_name: "nfs"
   storage_size: "10Ti"
 
