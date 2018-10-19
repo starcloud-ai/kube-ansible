@@ -1,8 +1,7 @@
 ---
-sriov_ipam_config: '{
-        "type": "dhcp"
-      }'
+sriov_ipam_config: 
+        type: "dhcp"
 
-macvlan_ipam_config: '{
-        "type": "dhcp"
-      }'
+
+macvlan_ipam_config: 
+        type: "dhcp"

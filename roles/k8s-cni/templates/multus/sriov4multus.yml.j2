@@ -8,7 +8,7 @@ data:
   config.json: |
     {
         "mode" : "sriov",
-        "pfNetdevices": {{ pfNetdevices }}
+        "pfNetdevices": {{ pfNetdevices|convert2jsonstr }}
     }
 ---
 apiVersion: extensions/v1beta1
@@ -103,5 +103,5 @@ spec:
       "name": "mynet",
       "type": "sriov",
       "if0": "{{ pfNetdevices[0] }}",
-      "ipam": {{ sriov_ipam_config }}
+      "ipam": {{ sriov_ipam_config|convert2jsonstr }}
     }'
