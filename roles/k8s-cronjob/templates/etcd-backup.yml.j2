@@ -16,7 +16,9 @@ metadata:
   name: etcd-backup-cron
   namespace: kube-system
 spec:
-  schedule: "*/1 * * * *"
+  schedule: "* * */1 * *"
+  concurrencyPolicy: "Forbid"
+  startingDeadlineSeconds: 60
   jobTemplate:
     spec:
       template:
@@ -24,7 +26,7 @@ spec:
           containers:
           - name: etcd-backup-cron
             image: quay.io/coreos/etcd:v3.3.8
-            command: ["etcdctl","snapshot", "save", "/tmp/snapshot.db"]
+            command: ["/bin/sh","/scripts/backup.sh"]
             env:
             - name: ETCDCTL_API
               value: "3"
@@ -38,35 +40,40 @@ spec:
               mountPath: {{ etcd_pki_dir }}
               readOnly: true
             - name: etcd-backup
-              mountPath: /tmp
+              mountPath: /tmp/backups
+            - name: etcd-backup-script
+              mountPath: /scripts
           volumes:
           - name: etcd-ca-certs
             configMap:
               name: etcd-cert-config
+          - name: etcd-backup-script
+            configMap:
+              name: etcd-backup-script
           - name: etcd-backup
-            {% if not logging.elasticsearch.storage_class_name -%}
+{% if not backup.etcd.storage_class_name %}
             emptyDir: {}
-            {% else -%}
+{% else %}
             persistentVolumeClaim:
               claimName: etcd-backup
-            {% endif %}
+{% endif %}
           restartPolicy: OnFailure
-{% if logging.elasticsearch.storage_class_name -%}
+{% if backup.etcd.storage_class_name -%}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: elasticsearch-logging
+  name: etcd-backup
   namespace: kube-system
   labels:
-    k8s-app: elasticsearch-logging
+    k8s-app: etcd-backup
 spec:
-  storageClassName: {{ logging.elasticsearch.storage_class_name }}
+  storageClassName: {{ backup.etcd.storage_class_name }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ logging.elasticsearch.storage_size }}
+      storage: {{ backup.etcd.storage_size }}
 {% endif -%}
 ---
 apiVersion: v1
@@ -87,3 +94,16 @@ data:
 {% for item in key.stdout_lines%}
     {{ item }}
 {% endfor %}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: etcd-backup-script
+  namespace: kube-system
+data:
+  backup.sh: |
+    #!/bin/sh
+    datestr=`date +%Y%m%d`
+    find /tmp/backups -mtime +10 -name "*.*" -exec rm -rf {} \;
+    etcdctl snapshot save /tmp/backups/etcd.backup."${datestr}" $*
+---

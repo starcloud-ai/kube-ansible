@@ -1,0 +1,9 @@
+---
+# Require the cluster is fully operation and running
+
+- hosts: masters
+  become: true
+  gather_facts: true
+  roles:
+  - { role: cluster-default, tags: always }
+  - { role: k8s-cronjob, tags: backup-etcd, when: enable_backup,    cronjob: "{{ cronjobs.etcd_backup }}" }

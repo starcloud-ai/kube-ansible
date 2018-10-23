@@ -39,6 +39,11 @@ nfs_server: "192.168.21.29"
 nfs_path: "/var/nfs/home"
 nfs_storage_class: "nfs"
 
+backup:
+  etcd:
+    storage_class_name: "nfs"
+    storage_size: "10Gi"
+
 logging:
   kibana:
     ingress_host: "kibana.{{ ingress_domain }}"
