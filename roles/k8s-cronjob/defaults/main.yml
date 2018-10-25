@@ -4,4 +4,6 @@ cronjobs:
   etcd_backup:
     name: etcd-backup
     task: etcd-backup.yml
-  
+  efk_data_clean:
+    name: efk-data-clean
+    task: efk-data-clean.yml

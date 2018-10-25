@@ -7,3 +7,4 @@
   roles:
   - { role: cluster-default, tags: always }
   - { role: k8s-cronjob, tags: backup-etcd, when: enable_backup,    cronjob: "{{ cronjobs.etcd_backup }}" }
+  - { role: k8s-cronjob, tags: efk-data-clean, when: enable_efk_data_clean,    cronjob: "{{ cronjobs.efk_data_clean }}" }

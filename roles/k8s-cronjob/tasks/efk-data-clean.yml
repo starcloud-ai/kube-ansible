@@ -1,0 +1,13 @@
+---
+- name: "Ensure cronjob directory exists"
+  file: path="{{ cronjob_dir }}" state=directory
+
+- name: copy efk data clean 
+  template:
+    src: "efk-data-clean.yml.j2"
+    dest: "{{ cronjob_dir }}/efk-data-clean.yml"
+
+- name: "Apply efk data clean cron job"
+  command: |
+    {{ bin_dir }}/kubectl --kubeconfig={{ admin_kubeconfig }} \
+      apply -f {{ cronjob_dir }}/efk-data-clean.yml
