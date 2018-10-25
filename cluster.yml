@@ -27,7 +27,6 @@
     - { role: k8s-setup, node_role: 'master', tags: master-setup }
     - { role: k8s-addon, addon: "{{ addons.kubedns }}" }
     - { role: k8s-addon, addon: "{{ addons.kubeproxy }}" }
-    - { role: k8s-cronjob, cron: "{{ cronjobs.etcd_backup }}" }
 
 
 - hosts: nodes
