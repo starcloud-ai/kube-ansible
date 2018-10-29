@@ -3,7 +3,6 @@
 dependencies:
   - { role: common/os-check }
   - { role: common/nvidia-check }
-  - { role: common/master-cri-default }
   - { role: download/package, when: container_runtime == 'docker' or container_runtime == 'nvidia-docker', pkg: "{{ package.docker }}" }
   - { role: download/package, when: container_runtime == 'nvidia-docker', pkg: "{{ package.nvidia_docker }}" }
   - { role: download/package, when: container_runtime == 'nvidia-docker', pkg: "{{ package.nvidia_container_runtime }}" }

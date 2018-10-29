@@ -1,13 +1,13 @@
 ---
-    
+
 - name: select docker container
   when: "container_runtime != 'containerd'"
   shell: 'lspci | grep NVIDIA'
-  register: result 
+  register: result
   ignore_errors: true
 
 - when:
     - "container_runtime  != 'containerd'"
-    - result.stdout != ''  
+    - result.stdout != ''
   set_fact:
     container_runtime: 'nvidia-docker'
