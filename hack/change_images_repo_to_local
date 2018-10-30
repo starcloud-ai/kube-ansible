@@ -9,6 +9,5 @@ echo $basepath
 
 for f in ${files}
 do
-  echo $f $repo
   python  ${basepath}/offline-tools/change_images_repo_to_local.py -f "${f}" -r "${repo}"
 done
