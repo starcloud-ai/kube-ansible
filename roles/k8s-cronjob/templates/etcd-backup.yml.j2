@@ -16,7 +16,7 @@ metadata:
   name: etcd-backup-cron
   namespace: kube-system
 spec:
-  schedule: "* * */1 * *"
+  schedule: "1 1 * * *"
   concurrencyPolicy: "Forbid"
   startingDeadlineSeconds: 60
   jobTemplate:
