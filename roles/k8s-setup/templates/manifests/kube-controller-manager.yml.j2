@@ -18,7 +18,7 @@ spec:
       - kube-controller-manager
       - --v={{ log_level }}
       - --logtostderr=true
-      - --address=127.0.0.1
+      - --address=0.0.0.0
       - --root-ca-file={{ ca }}
       - --cluster-signing-cert-file={{ ca }}
       - --cluster-signing-key-file={{ ca_key }}
