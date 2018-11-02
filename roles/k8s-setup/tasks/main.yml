@@ -23,3 +23,15 @@
 
 - when: node_role == 'master'
   include_tasks: setup-resources.yml
+
+- name: Set taint gpu-node to effect NoSchedule
+  when: node_role == 'node' and container_runtime == 'nvidia-docker'
+  command: |
+    {{ bin_dir }}/kubectl --kubeconfig={{ admin_kubeconfig }} \
+      taint nodes {{ ansible_hostname }} nvidia.com/gpu="":NoSchedule --overwrite
+  delegate_to: "{{ groups['masters'][0] }}"
+  register: set_taint
+  until: set_taint.rc == 0
+  retries: 10
+  delay: 2
+  ignore_errors: true
