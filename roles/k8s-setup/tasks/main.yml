@@ -35,3 +35,12 @@
   retries: 10
   delay: 2
   ignore_errors: true
+
+- name: Fetch kubeconfig to localhost
+  when: node_role == 'master'
+  fetch:
+    src: "{{ admin_kubeconfig }}"
+    dest: "{{ lookup('env','HOME') }}/.kube/config-{{ ingress_domain }}"
+    flat: yes
+  delegate_to: "{{ groups['masters'][0] }}"
+  run_once: true
