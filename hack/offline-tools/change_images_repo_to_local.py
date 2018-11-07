@@ -87,6 +87,10 @@ def main():
     local_repo_pattern = "(^ *)image: *" + args.repo + "/(.*)"
     repo_pattern.insert(0, local_repo_pattern)
     repo_pattern_obj[local_repo_pattern] = (re.compile(local_repo_pattern), False)
+    
+    local_repo_pattern = "(^ *)- image: *" + args.repo + "/(.*)"
+    repo_pattern.insert(1, local_repo_pattern)
+    repo_pattern_obj[local_repo_pattern] = (re.compile(local_repo_pattern), False)
 
     process_file(args.file, args.repo)
 
