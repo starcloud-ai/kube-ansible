@@ -76,22 +76,15 @@ data:
       "type": "multus",
       "delegates": [
         {
-          "type": "flannel",
-          "name": "flannel.1",
-          "delegate": {
-            "isDefaultGateway": true
-          }
+          "type": "sriov",
+          "name": "sriov.1",
+          "if0": "{{ pfNetdevices[0] }}",
+          "ipam": {{ sriov_ipam_config|convert2jsonstr }}
         }
       ],
       "kubeconfig": "/etc/cni/net.d/multus.d/multus.kubeconfig",
       "LogLevel": "debug"
     }
-# -------------- for openshift.
-# "delegates": [{
-#   "type": "openshift-sdn",
-#   "name:" "openshift.1",
-#   "masterplugin": true
-# }],
 
 ---
 apiVersion: extensions/v1beta1
@@ -136,6 +129,8 @@ spec:
           mountPath: /host/etc/cni/net.d
         - name: cnibin
           mountPath: /host/opt/cni/bin
+        - name: multus-cfg
+          mountPath: /usr/src/multus-cni/images
       volumes:
         - name: cni
           hostPath:
@@ -146,10 +141,8 @@ spec:
         - name: multus-cfg
           configMap:
             name: multus-cni-config
-
-
-{% include "multus/macvlan4multus.yml.j2" %}
-
-{% include "multus/flannel4multus.yml.j2" %}
+            items:
+            - key: cni-conf.json
+              path: 70-multus.conf
 
 {% include "multus/sriov4multus.yml.j2" %}

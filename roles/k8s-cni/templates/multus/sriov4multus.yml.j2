@@ -97,15 +97,15 @@ spec:
       - name: host-cni-bin
         hostPath:
               path: /opt/cni/bin
----
-apiVersion: "k8s.cni.cncf.io/v1"
-kind: NetworkAttachmentDefinition
-metadata:
-  name: sriov-conf
-spec: 
-  config: '{
-      "name": "mynet",
-      "type": "sriov",
-      "if0": "{{ pfNetdevices[0] }}",
-      "ipam": {{ sriov_ipam_config|convert2jsonstr }}
-    }'
+# ---
+# apiVersion: "k8s.cni.cncf.io/v1"
+# kind: NetworkAttachmentDefinition
+# metadata:
+#   name: sriov-conf
+# spec: 
+#   config: '{
+#       "name": "mynet",
+#       "type": "sriov",
+#       "if0": "{{ pfNetdevices[0] }}",
+#       "ipam": {{ sriov_ipam_config|convert2jsonstr }}
+#     }'
