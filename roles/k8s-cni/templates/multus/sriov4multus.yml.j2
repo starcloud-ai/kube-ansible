@@ -33,6 +33,8 @@ spec:
       # This, along with the annotation above marks this pod as a critical add-on.
       - key: CriticalAddonsOnly
         operator: Exists
+      - effect: NoSchedule
+        key: nvidia.com/gpu
       containers:
       - image: rdma/k8s-rdma-sriov-dev-plugin
         name: k8s-rdma-sriov-dp-ds
@@ -71,6 +73,8 @@ spec:
       - key: node-role.kubernetes.io/master
         operator: Exists
         effect: NoSchedule
+      - effect: NoSchedule
+        key: nvidia.com/gpu
       initContainers:
       - name: install-cni
         image: rdma/k8s-sriov-cni-installer

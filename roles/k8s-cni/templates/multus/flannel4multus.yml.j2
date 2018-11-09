@@ -99,6 +99,8 @@ spec:
       - key: node-role.kubernetes.io/master
         operator: Exists
         effect: NoSchedule
+      - effect: NoSchedule
+        key: nvidia.com/gpu
       serviceAccountName: flannel
       # ------------------------------- Intentionally removed, Multus daemonset configures /etc/cni/net.d
       # initContainers:
