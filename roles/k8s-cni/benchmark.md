@@ -26,6 +26,7 @@
     * [sriov-cni](https://github.com/Mellanox/sriov-cni)
       * ipam: DHCP
     * [k8s-rdma-sriov-dev-plugin](https://github.com/Mellanox/k8s-rdma-sriov-dev-plugin)
+    * [macvlan](https://github.com/containernetworking/plugins/tree/master/plugins/main/macvlan)
     * [calico](https://www.projectcalico.org)
   * pv
     * nfs
@@ -33,11 +34,14 @@
   * iperf3
   * perftest
 
+* 说明:
+  最初按照mellanox官方文档尝试使用calico作为基础cni, 搭建支持hca的集群。但是始终RDMA总是失败([issue](https://github.com/Mellanox/k8s-rdma-sriov-dev-plugin/issues/18))。遂用macvlan替换calico重新进行测试。
+
 ## sriov 容器网络测试
 
 ### 镜像准备
 
-因为`mellanox/centos_7_4_mofed_4_2_1_2_0_0_60`里只有`perftest` 没有`iperf3`所以需要自己制作镜像
+因为 `mellanox/centos_7_4_mofed_4_2_1_2_0_0_60` 里只有 `perftest` 没有 `iperf3` 所以需要自己制作镜像
 
 ```text
 git clone https://github.com/starcloud-ai/mofed_dockerfiles.git
@@ -78,7 +82,7 @@ docker push 172.16.0.200:5000/asdfsx/mofed_benchmark
 | run_perftest_loopback | /usr/bin/run_perftest_loopback | --- |
 | run_perftest_multi_devices | /usr/bin/run_perftest_multi_devices | --- |
 
-### 使用`mofed_benchmark`创建pod
+### 使用 `mofed_benchmark` 创建pod
 
 ```text
 apiVersion: v1
@@ -300,9 +304,7 @@ rdma_client: start
 rdma_client: end 0
 ```
 
-#### 选取不同node上的pod，进行 RDMA 性能测试
-
-测试之前先选择已经active的网卡
+#### 测试之前先选择已经active的网卡
 
 ```text
 $ kubectl exec -it iperf-server -- ibv_devices
@@ -364,6 +366,8 @@ CA 'mlx5_0'
                 Port GUID: 0x0000000000000000
                 Link layer: Ethernet
 ```
+
+#### 选取不同node上的pod，进行 RDMA 性能测试
 
 ##### ib_read_bw
 
@@ -710,151 +714,149 @@ $ kubectl exec -it iperf-server ip a
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
     inet 127.0.0.1/8 scope host lo
        valid_lft forever preferred_lft forever
-2: tunl0@NONE: <NOARP> mtu 1480 qdisc noop state DOWN group default qlen 1000
-    link/ipip 0.0.0.0 brd 0.0.0.0
-4: eth0@if329: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default 
-    link/ether ce:1e:59:f0:fb:16 brd ff:ff:ff:ff:ff:ff link-netnsid 0
-    inet 10.244.0.5/32 scope global eth0
+2: eth0@if4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default 
+    link/ether a2:23:48:b2:79:b0 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 10.0.32.6/24 scope global eth0
        valid_lft forever preferred_lft forever
 
 # 在sriov网卡上启动iperf server
-$ kubectl exec -it iperf-server -- /usr/bin/iperf3 --bind 10.244.0.5 -s
+$ kubectl exec -it iperf-server -- /usr/bin/iperf3 --bind 10.0.32.6 -s
 ```
 
 #### 选取同一个node上的pod，进行测试
 
 ```text
 # 单线程测试tcp
-$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -c 10.244.0.5
+$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -c 10.0.32.6
 ......
 [ ID] Interval           Transfer     Bandwidth       Retr
-[  4]   0.00-10.00  sec  42.5 GBytes  36.5 Gbits/sec    0             sender
-[  4]   0.00-10.00  sec  42.5 GBytes  36.5 Gbits/sec                  receiver
+[  4]   0.00-10.00  sec  53.3 GBytes  45.8 Gbits/sec    0             sender
+[  4]   0.00-10.00  sec  53.3 GBytes  45.8 Gbits/sec                  receiver
 
 # 多线程测试tcp
-$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -c 10.244.0.5 -P 4
+$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -c 10.0.32.6 -P 4
 ......
 [ ID] Interval           Transfer     Bandwidth       Retr
-[  4]   0.00-10.00  sec  11.1 GBytes  9.57 Gbits/sec    0             sender
-[  4]   0.00-10.00  sec  11.1 GBytes  9.57 Gbits/sec                  receiver
-[  6]   0.00-10.00  sec  11.1 GBytes  9.57 Gbits/sec    0             sender
-[  6]   0.00-10.00  sec  11.1 GBytes  9.57 Gbits/sec                  receiver
-[  8]   0.00-10.00  sec  11.1 GBytes  9.57 Gbits/sec    0             sender
-[  8]   0.00-10.00  sec  11.1 GBytes  9.57 Gbits/sec                  receiver
-[ 10]   0.00-10.00  sec  11.1 GBytes  9.57 Gbits/sec    0             sender
-[ 10]   0.00-10.00  sec  11.1 GBytes  9.57 Gbits/sec                  receiver
-[SUM]   0.00-10.00  sec  44.5 GBytes  38.3 Gbits/sec    0             sender
-[SUM]   0.00-10.00  sec  44.5 GBytes  38.3 Gbits/sec                  receiver
+[  4]   0.00-10.00  sec  14.5 GBytes  12.5 Gbits/sec    0             sender
+[  4]   0.00-10.00  sec  14.5 GBytes  12.5 Gbits/sec                  receiver
+[  6]   0.00-10.00  sec  14.5 GBytes  12.5 Gbits/sec    0             sender
+[  6]   0.00-10.00  sec  14.5 GBytes  12.5 Gbits/sec                  receiver
+[  8]   0.00-10.00  sec  14.5 GBytes  12.5 Gbits/sec    0             sender
+[  8]   0.00-10.00  sec  14.5 GBytes  12.5 Gbits/sec                  receiver
+[ 10]   0.00-10.00  sec  14.5 GBytes  12.5 Gbits/sec    0             sender
+[ 10]   0.00-10.00  sec  14.5 GBytes  12.5 Gbits/sec                  receiver
+[SUM]   0.00-10.00  sec  58.1 GBytes  49.9 Gbits/sec    0             sender
+[SUM]   0.00-10.00  sec  58.1 GBytes  49.9 Gbits/sec                  receiver
 
 # 单线程测试udp
-$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.244.0.5
+$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.0.32.6
 ......
 [ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
-[  4]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.005 ms  0/897 (0%)  
+[  4]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.008 ms  0/897 (0%)  
 [  4] Sent 897 datagrams
 
 # 多线程测试udp
-$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.244.0.5 -P 4
+$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.0.32.6 -P 4
 ......
 [ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
-[  4]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.004 ms  0/897 (0%)  
+[  4]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.012 ms  0/897 (0%)  
 [  4] Sent 897 datagrams
-[  6]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.002 ms  0/897 (0%)  
+[  6]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.003 ms  0/897 (0%)  
 [  6] Sent 897 datagrams
-[  8]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.001 ms  0/897 (0%)  
+[  8]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.002 ms  0/897 (0%)  
 [  8] Sent 897 datagrams
-[ 10]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.001 ms  0/897 (0%)  
+[ 10]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.002 ms  0/897 (0%)  
 [ 10] Sent 897 datagrams
-[SUM]   0.00-10.00  sec  4.95 MBytes  4.16 Mbits/sec  0.002 ms  0/3588 (0%)
+[SUM]   0.00-10.00  sec  4.95 MBytes  4.16 Mbits/sec  0.005 ms  0/3588 (0%)
 
 # 单线程测试udp，增加带宽参数
-$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.244.0.5 -b 100G
+$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.0.32.6 -b 100G
 ......
 [ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
-[  4]   0.00-10.00  sec  1.96 GBytes  1.68 Gbits/sec  0.002 ms  888/1450751 (0.061%)  
-[  4] Sent 1450751 datagrams
+[  4]   0.00-10.00  sec  3.63 GBytes  3.12 Gbits/sec  0.001 ms  9099/2693871 (0.34%)  
+[  4] Sent 2693871 datagrams
 
 # 多线程测试udp，增加带宽参数
-$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.244.0.5 -P 4 -b 100G
+$ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.0.32.6 -P 4 -b 100G
 ......
 [ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
-[  4]   0.00-10.00  sec   703 MBytes   590 Mbits/sec  0.004 ms  0/509295 (0%)  
-[  4] Sent 509295 datagrams
-[  6]   0.00-10.00  sec   703 MBytes   590 Mbits/sec  0.004 ms  0/509295 (0%)  
-[  6] Sent 509295 datagrams
-[  8]   0.00-10.00  sec   703 MBytes   590 Mbits/sec  0.002 ms  0/509295 (0%)  
-[  8] Sent 509295 datagrams
-[ 10]   0.00-10.00  sec   703 MBytes   590 Mbits/sec  0.004 ms  0/509295 (0%)  
-[ 10] Sent 509295 datagrams
-[SUM]   0.00-10.00  sec  2.75 GBytes  2.36 Gbits/sec  0.003 ms  0/2037180 (0%)
+[  4]   0.00-10.00  sec  1.21 GBytes  1.04 Gbits/sec  0.004 ms  1073/897612 (0.12%)  
+[  4] Sent 897612 datagrams
+[  6]   0.00-10.00  sec  1.21 GBytes  1.04 Gbits/sec  0.001 ms  1073/897612 (0.12%)  
+[  6] Sent 897612 datagrams
+[  8]   0.00-10.00  sec  1.21 GBytes  1.04 Gbits/sec  0.001 ms  1076/897612 (0.12%)  
+[  8] Sent 897612 datagrams
+[ 10]   0.00-10.00  sec  1.21 GBytes  1.04 Gbits/sec  0.001 ms  1077/897612 (0.12%)  
+[ 10] Sent 897612 datagrams
+[SUM]   0.00-10.00  sec  4.84 GBytes  4.16 Gbits/sec  0.002 ms  4299/3590448 (0.12%)  
 ```
 
 #### 选取不同node上的pod，进行测试
 
 ```text
 # 单线程测试tcp
-$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -c 10.244.0.5
+$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -c 10.0.32.6
 ......
 [ ID] Interval           Transfer     Bandwidth       Retr
-[  4]   0.00-10.00  sec  12.0 GBytes  10.3 Gbits/sec  975             sender
-[  4]   0.00-10.00  sec  12.0 GBytes  10.3 Gbits/sec                  receiver
+[  4]   0.00-10.00  sec  26.0 GBytes  22.3 Gbits/sec   72             sender
+[  4]   0.00-10.00  sec  26.0 GBytes  22.3 Gbits/sec                  receiver
 
 # 多线程测试tcp
-$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -c 10.244.0.5 -P 4
+$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -c 10.0.32.6 -P 4
 ......
 [ ID] Interval           Transfer     Bandwidth       Retr
-[  4]   0.00-10.00  sec  3.35 GBytes  2.88 Gbits/sec  435             sender
-[  4]   0.00-10.00  sec  3.35 GBytes  2.88 Gbits/sec                  receiver
-[  6]   0.00-10.00  sec  3.46 GBytes  2.97 Gbits/sec  629             sender
-[  6]   0.00-10.00  sec  3.46 GBytes  2.97 Gbits/sec                  receiver
-[  8]   0.00-10.00  sec  3.33 GBytes  2.86 Gbits/sec  508             sender
-[  8]   0.00-10.00  sec  3.33 GBytes  2.86 Gbits/sec                  receiver
-[ 10]   0.00-10.00  sec  3.40 GBytes  2.92 Gbits/sec  539             sender
-[ 10]   0.00-10.00  sec  3.40 GBytes  2.92 Gbits/sec                  receiver
-[SUM]   0.00-10.00  sec  13.5 GBytes  11.6 Gbits/sec  2111             sender
-[SUM]   0.00-10.00  sec  13.5 GBytes  11.6 Gbits/sec                  receiver
+[  4]   0.00-10.00  sec  6.17 GBytes  5.30 Gbits/sec    0             sender
+[  4]   0.00-10.00  sec  6.17 GBytes  5.30 Gbits/sec                  receiver
+[  6]   0.00-10.00  sec  6.17 GBytes  5.30 Gbits/sec    0             sender
+[  6]   0.00-10.00  sec  6.17 GBytes  5.30 Gbits/sec                  receiver
+[  8]   0.00-10.00  sec  6.17 GBytes  5.30 Gbits/sec    0             sender
+[  8]   0.00-10.00  sec  6.17 GBytes  5.30 Gbits/sec                  receiver
+[ 10]   0.00-10.00  sec  6.17 GBytes  5.30 Gbits/sec    0             sender
+[ 10]   0.00-10.00  sec  6.17 GBytes  5.30 Gbits/sec                  receiver
+[SUM]   0.00-10.00  sec  24.7 GBytes  21.2 Gbits/sec    0             sender
+[SUM]   0.00-10.00  sec  24.7 GBytes  21.2 Gbits/sec                  receiver
 
 # 单线程测试udp
-$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.244.0.5
+$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.0.32.6
 ......
 [ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
-[  4]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.016 ms  0/935 (0%)  
-[  4] Sent 935 datagrams
+[  4]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.009 ms  0/897 (0%)  
+[  4] Sent 897 datagrams
 
 # 多线程测试udp
-$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.244.0.5 -P 4
+$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.0.32.6 -P 4
 ......
 [ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
-[  4]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.093 ms  0/935 (0%)  
-[  4] Sent 935 datagrams
-[  6]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.095 ms  0/935 (0%)  
-[  6] Sent 935 datagrams
-[  8]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.100 ms  0/935 (0%)  
-[  8] Sent 935 datagrams
-[ 10]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.098 ms  0/935 (0%)  
-[ 10] Sent 935 datagrams
-[SUM]   0.00-10.00  sec  4.95 MBytes  4.15 Mbits/sec  0.096 ms  0/3740 (0%)
+[  4]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.013 ms  0/897 (0%)  
+[  4] Sent 897 datagrams
+[  6]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.015 ms  0/897 (0%)  
+[  6] Sent 897 datagrams
+[  8]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.015 ms  0/897 (0%)  
+[  8] Sent 897 datagrams
+[ 10]   0.00-10.00  sec  1.24 MBytes  1.04 Mbits/sec  0.013 ms  0/897 (0%)  
+[ 10] Sent 897 datagrams
+[SUM]   0.00-10.00  sec  4.95 MBytes  4.16 Mbits/sec  0.014 ms  0/3588 (0%)
 
 # 单线程测试udp，增加带宽参数
-$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.244.0.5 -b 100G
+$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.0.32.6 -b 100G
 ......
 [ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
-[  4]   0.00-10.00  sec  1.84 GBytes  1.58 Gbits/sec  0.005 ms  569816/1420298 (40%)  
-[  4] Sent 1420298 datagrams
+[  4]   0.00-10.00  sec  4.40 GBytes  3.78 Gbits/sec  0.003 ms  1211922/3259871 (37%)  
+[  4] Sent 3259871 datagrams
 
 # 多线程测试udp，增加带宽参数
-$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.244.0.5 -P 4 -b 100G
+$ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.0.32.6 -P 4 -b 100G
 ......
 [ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
-[  4]   0.00-10.00  sec   517 MBytes   434 Mbits/sec  0.027 ms  259/390784 (0.066%)  
-[  4] Sent 390784 datagrams
-[  6]   0.00-10.00  sec   517 MBytes   434 Mbits/sec  0.028 ms  260/390783 (0.067%)  
-[  6] Sent 390783 datagrams
-[  8]   0.00-10.00  sec   517 MBytes   434 Mbits/sec  0.028 ms  260/390783 (0.067%)  
-[  8] Sent 390783 datagrams
-[ 10]   0.00-10.00  sec   517 MBytes   434 Mbits/sec  0.028 ms  260/390783 (0.067%)  
-[ 10] Sent 390783 datagrams
-[SUM]   0.00-10.00  sec  2.02 GBytes  1.74 Gbits/sec  0.028 ms  1039/1563133 (0.066%)
+[  4]   0.00-10.00  sec  1.15 GBytes   986 Mbits/sec  0.003 ms  122310/851232 (14%)  
+[  4] Sent 851232 datagrams
+[  6]   0.00-10.00  sec  1.15 GBytes   986 Mbits/sec  0.005 ms  119468/851243 (14%)  
+[  6] Sent 851243 datagrams
+[  8]   0.00-10.00  sec  1.15 GBytes   986 Mbits/sec  0.003 ms  116082/851226 (14%)  
+[  8] Sent 851226 datagrams
+[ 10]   0.00-10.00  sec  1.15 GBytes   986 Mbits/sec  0.003 ms  122517/851198 (14%)  
+[ 10] Sent 851198 datagrams
+[SUM]   0.00-10.00  sec  4.59 GBytes  3.94 Gbits/sec  0.004 ms  480377/3404899 (14%)  
 ```
 
 ### 使用perftest进行RDMA网络测试
@@ -871,416 +873,542 @@ rdma_client: start
 rdma_client: end 0
 ```
 
-#### 选取同一个node上的pod，进行 RDMA 性能测试
-
-#### 选取不同node上的pod，进行 RDMA 性能测试
-
-
-1. 选取跨主机的client pod执行测试
-
-    ```text
-    # 单线程测试tcp
-    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -c 10.244.3.3
-    ......
-    [ ID] Interval           Transfer     Bitrate         Retr
-    [  5]   0.00-10.00  sec  10.6 GBytes  9.13 Gbits/sec  1077             sender
-    [  5]   0.00-10.04  sec  10.6 GBytes  9.09 Gbits/sec                  receiver
-
-    # 多线程测试tcp
-    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -c 10.244.3.3 -P 4
-    ......
-    [ ID] Interval           Transfer     Bitrate         Retr
-    [  5]   0.00-10.00  sec  2.67 GBytes  2.30 Gbits/sec  358             sender
-    [  5]   0.00-10.03  sec  2.67 GBytes  2.28 Gbits/sec                  receiver
-    [  7]   0.00-10.00  sec  2.78 GBytes  2.39 Gbits/sec  151             sender
-    [  7]   0.00-10.03  sec  2.77 GBytes  2.37 Gbits/sec                  receiver
-    [  9]   0.00-10.00  sec  2.78 GBytes  2.39 Gbits/sec  795             sender
-    [  9]   0.00-10.03  sec  2.77 GBytes  2.37 Gbits/sec                  receiver
-    [ 11]   0.00-10.00  sec  2.67 GBytes  2.29 Gbits/sec   90             sender
-    [ 11]   0.00-10.03  sec  2.66 GBytes  2.28 Gbits/sec                  receiver
-    [SUM]   0.00-10.00  sec  10.9 GBytes  9.36 Gbits/sec  1394             sender
-    [SUM]   0.00-10.03  sec  10.9 GBytes  9.31 Gbits/sec                  receiver
-
-    # 单线程测试udp
-    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.244.3.3
-    ......
-    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-    [  5]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/945 (0%)  sender
-    [  5]   0.00-10.04  sec  1.25 MBytes  1.05 Mbits/sec  0.012 ms  0/945 (0%)  receiver
-
-    # 多线程测试udp
-    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.244.3.3 -P 4
-    ......
-    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-    [  5]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/945 (0%)  sender
-    [  5]   0.00-10.04  sec  1.25 MBytes  1.04 Mbits/sec  0.008 ms  0/945 (0%)  receiver
-    [  7]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/945 (0%)  sender
-    [  7]   0.00-10.04  sec  1.25 MBytes  1.04 Mbits/sec  0.013 ms  0/945 (0%)  receiver
-    [  9]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/945 (0%)  sender
-    [  9]   0.00-10.04  sec  1.25 MBytes  1.04 Mbits/sec  0.011 ms  0/945 (0%)  receiver
-    [ 11]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/945 (0%)  sender
-    [ 11]   0.00-10.04  sec  1.25 MBytes  1.04 Mbits/sec  0.011 ms  0/945 (0%)  receiver
-    [SUM]   0.00-10.00  sec  5.00 MBytes  4.20 Mbits/sec  0.000 ms  0/3780 (0%)  sender
-    [SUM]   0.00-10.04  sec  5.00 MBytes  4.18 Mbits/sec  0.011 ms  0/3780 (0%)  receiver
-
-    # 单线程测试udp，增加带宽参数
-    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.244.3.3 -b 100G
-    ......
-    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-    [  5]   0.00-10.00  sec  1.31 GBytes  1.13 Gbits/sec  0.000 ms  0/1016529 (0%)  sender
-    [  5]   0.00-10.05  sec   734 MBytes   613 Mbits/sec  0.015 ms  461950/1016448 (45%)  receiver
-
-    # 多线程测试udp，增加带宽参数
-    $ kubectl exec -it iperf-client-1 -- /usr/bin/iperf3 -u -c 10.244.3.3 -P 4 -b 100G
-    ......
-    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-    [  5]   0.00-10.00  sec   400 MBytes   336 Mbits/sec  0.000 ms  0/302373 (0%)  sender
-    [  5]   0.00-10.04  sec   399 MBytes   333 Mbits/sec  0.032 ms  932/302362 (0.31%)  receiver
-    [  7]   0.00-10.00  sec   400 MBytes   336 Mbits/sec  0.000 ms  0/302373 (0%)  sender
-    [  7]   0.00-10.04  sec   399 MBytes   333 Mbits/sec  0.032 ms  933/302362 (0.31%)  receiver
-    [  9]   0.00-10.00  sec   400 MBytes   336 Mbits/sec  0.000 ms  0/302373 (0%)  sender
-    [  9]   0.00-10.04  sec   399 MBytes   333 Mbits/sec  0.032 ms  933/302362 (0.31%)  receiver
-    [ 11]   0.00-10.00  sec   400 MBytes   336 Mbits/sec  0.000 ms  0/302373 (0%)  sender
-    [ 11]   0.00-10.04  sec   399 MBytes   333 Mbits/sec  0.032 ms  932/302362 (0.31%)  receiver
-    [SUM]   0.00-10.00  sec  1.56 GBytes  1.34 Gbits/sec  0.000 ms  0/1209492 (0%)  sender
-    [SUM]   0.00-10.04  sec  1.56 GBytes  1.33 Gbits/sec  0.032 ms  3730/1209448 (0.31%)  receiver
-    ```
-
-2. 选取同主机的client pod执行测试
-
-    ```text
-    # 单线程测试tcp
-    $ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -c 10.244.3.3
-    ......
-    [ ID] Interval           Transfer     Bitrate         Retr
-    [  5]   0.00-10.00  sec  36.4 GBytes  31.3 Gbits/sec  1042             sender
-    [  5]   0.00-10.04  sec  36.4 GBytes  31.2 Gbits/sec                  receiver
-
-    # 多线程测试tcp
-    $ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -c 10.244.3.3 -P 4
-    ......
-    [ ID] Interval           Transfer     Bitrate         Retr
-    [  5]   0.00-10.00  sec  9.71 GBytes  8.34 Gbits/sec    0             sender
-    [  5]   0.00-10.03  sec  9.71 GBytes  8.32 Gbits/sec                  receiver
-    [  7]   0.00-10.00  sec  9.71 GBytes  8.34 Gbits/sec    0             sender
-    [  7]   0.00-10.03  sec  9.71 GBytes  8.32 Gbits/sec                  receiver
-    [  9]   0.00-10.00  sec  9.71 GBytes  8.34 Gbits/sec    0             sender
-    [  9]   0.00-10.03  sec  9.71 GBytes  8.32 Gbits/sec                  receiver
-    [ 11]   0.00-10.00  sec  9.71 GBytes  8.34 Gbits/sec    0             sender
-    [ 11]   0.00-10.03  sec  9.71 GBytes  8.32 Gbits/sec                  receiver
-    [SUM]   0.00-10.00  sec  38.8 GBytes  33.4 Gbits/sec    0             sender
-    [SUM]   0.00-10.03  sec  38.8 GBytes  33.3 Gbits/sec                  receiver
-
-    # 单线程测试udp
-    $ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.244.3.3
-    ......
-    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-    [  5]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/906 (0%)  sender
-    [  5]   0.00-10.04  sec  1.25 MBytes  1.04 Mbits/sec  0.006 ms  0/906 (0%)  receiver
-
-    # 多线程测试udp
-    $ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.244.3.3 -P 4
-    ......
-    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-    [  5]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/906 (0%)  sender
-    [  5]   0.00-10.04  sec  1.25 MBytes  1.05 Mbits/sec  0.003 ms  0/906 (0%)  receiver
-    [  7]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/906 (0%)  sender
-    [  7]   0.00-10.04  sec  1.25 MBytes  1.05 Mbits/sec  0.002 ms  0/906 (0%)  receiver
-    [  9]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/906 (0%)  sender
-    [  9]   0.00-10.04  sec  1.25 MBytes  1.05 Mbits/sec  0.005 ms  0/906 (0%)  receiver
-    [ 11]   0.00-10.00  sec  1.25 MBytes  1.05 Mbits/sec  0.000 ms  0/906 (0%)  sender
-    [ 11]   0.00-10.04  sec  1.25 MBytes  1.05 Mbits/sec  0.005 ms  0/906 (0%)  receiver
-    [SUM]   0.00-10.00  sec  5.00 MBytes  4.20 Mbits/sec  0.000 ms  0/3624 (0%)  sender
-    [SUM]   0.00-10.04  sec  5.00 MBytes  4.18 Mbits/sec  0.004 ms  0/3624 (0%)  receiver
-
-    # 单线程测试udp，增加带宽参数
-    $ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.244.3.3 -b 100G
-    ......
-    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-    [  5]   0.00-10.00  sec  1.45 GBytes  1.25 Gbits/sec  0.000 ms  0/1077749 (0%)  sender
-    [  5]   0.00-10.05  sec  1.45 GBytes  1.24 Gbits/sec  0.000 ms  5531/1077749 (0.51%)  receiver
-
-    # 多线程测试udp，增加带宽参数
-    $ kubectl exec -it iperf-client-3 -- /usr/bin/iperf3 -u -c 10.244.3.3 -P 4 -b 100G
-    ......
-    [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-    [  5]   0.00-10.00  sec   500 MBytes   419 Mbits/sec  0.000 ms  0/361833 (0%)  sender
-    [  5]   0.00-10.04  sec   495 MBytes   414 Mbits/sec  0.002 ms  3074/361833 (0.85%)  receiver
-    [  7]   0.00-10.00  sec   500 MBytes   419 Mbits/sec  0.000 ms  0/361833 (0%)  sender
-    [  7]   0.00-10.04  sec   495 MBytes   414 Mbits/sec  0.002 ms  3074/361833 (0.85%)  receiver
-    [  9]   0.00-10.00  sec   500 MBytes   419 Mbits/sec  0.000 ms  0/361833 (0%)  sender
-    [  9]   0.00-10.04  sec   495 MBytes   414 Mbits/sec  0.002 ms  3074/361833 (0.85%)  receiver
-    [ 11]   0.00-10.00  sec   500 MBytes   419 Mbits/sec  0.000 ms  0/361833 (0%)  sender
-    [ 11]   0.00-10.04  sec   495 MBytes   414 Mbits/sec  0.002 ms  3075/361833 (0.85%)  receiver
-    [SUM]   0.00-10.00  sec  1.95 GBytes  1.68 Gbits/sec  0.000 ms  0/1447332 (0%)  sender
-    [SUM]   0.00-10.04  sec  1.94 GBytes  1.66 Gbits/sec  0.002 ms  12297/1447332 (0.85%)  receiver
-    ```
-
-### 4. 在宿主机上使用perftest测试
-
-1. 连通性测试
-
-    ```text
-    # 在cu05上执行
-    $ ifconfig enp175s0
-    enp175s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-           inet 10.0.0.155  netmask 255.255.255.0  broadcast 10.0.0.255
-           inet6 fe80::526b:4bff:fe28:4df8  prefixlen 64  scopeid 0x20<link>
-           ether 50:6b:4b:28:4d:f8  txqueuelen 1000  (Ethernet)
-           RX packets 902715  bytes 58246978 (58.2 MB)
-           RX errors 0  dropped 0  overruns 0  frame 0
-           TX packets 90088  bytes 6375868 (6.3 MB)
-           TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
-    $ rdma_server
-
-    # 在cu07上执行
-    $ rdma_client -s 10.0.0.155
-    rdma_client: start
-    rdma_client: end 0
-    ```
-
-2. 性能测试
-
-    ```text
-    # 在cu05上执行
-    $ ib_write_bw
-
-    # 在cu07上执行
-    $ ib_write_bw -d mlx5_0 10.0.0.155
-    ---------------------------------------------------------------------------------------
-                        RDMA_Write BW Test
-     Dual-port       : OFF          Device         : mlx5_0
-     Number of qps   : 1            Transport type : IB
-     Connection type : RC           Using SRQ      : OFF
-     TX depth        : 128
-     CQ Moderation   : 100
-     Mtu             : 1024[B]
-     Link type       : Ethernet
-     GID index       : 3
-     Max inline data : 0[B]
-     rdma_cm QPs     : OFF
-     Data ex. method : Ethernet
-    ---------------------------------------------------------------------------------------
-     local address: LID 0000 QPN 0x00b7 PSN 0xda4e0c RKey 0x0057c3 VAddr 0x007f1d9feb0000
-     GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:00:157
-     remote address: LID 0000 QPN 0x00b7 PSN 0x2c7174 RKey 0x009450 VAddr 0x007f286d020000
-     GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:00:155
-    ---------------------------------------------------------------------------------------
-     #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
-    Conflicting CPU frequency values detected: 1003.892000 != 1940.696000. CPU Frequency is not max.
-     65536      5000             11044.38            11043.78                  0.176700
-    ---------------------------------------------------------------------------------------
-    ```
-
-    ```text
-    # 在cu05上执行
-    $ ib_atomic_bw
-
-    # 在cu07上执行
-    $ ib_atomic_bw -d mlx5_0 10.0.0.155
-    ---------------------------------------------------------------------------------------
-                        Atomic FETCH_AND_ADD BW Test
-     Dual-port       : OFF          Device         : mlx5_0
-     Number of qps   : 1            Transport type : IB
-     Connection type : RC           Using SRQ      : OFF
-     TX depth        : 128
-     CQ Moderation   : 100
-     Mtu             : 1024[B]
-     Link type       : Ethernet
-     GID index       : 3
-     Outstand reads  : 16
-     rdma_cm QPs     : OFF
-     Data ex. method : Ethernet
-    ---------------------------------------------------------------------------------------
-     local address: LID 0000 QPN 0x00b8 PSN 0x9a0df2
-     GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:00:155
-     remote address: LID 0000 QPN 0x00b9 PSN 0x5db9ac
-     GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:00:155
-    ---------------------------------------------------------------------------------------
-     #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
-    Conflicting CPU frequency values detected: 1000.005000 != 3060.420000. CPU Frequency is not max.
-     8          1000             16.28              16.17              2.119821
-    ---------------------------------------------------------------------------------------
-    ```
-
-    ```text
-    # 在cu05上执行
-    $ ib_read_bw
-
-    # 在cu07上执行
-    $ ib_read_bw -d mlx5_0 10.0.0.155
-    ---------------------------------------------------------------------------------------
-                        RDMA_Read BW Test
-     Dual-port       : OFF          Device         : mlx5_0
-     Number of qps   : 1            Transport type : IB
-     Connection type : RC           Using SRQ      : OFF
-     TX depth        : 128
-     CQ Moderation   : 100
-     Mtu             : 1024[B]
-     Link type       : Ethernet
-     GID index       : 3
-     Outstand reads  : 16
-     rdma_cm QPs     : OFF
-     Data ex. method : Ethernet
-    ---------------------------------------------------------------------------------------
-     local address: LID 0000 QPN 0x00b9 PSN 0x1b5fa OUT 0x10 RKey 0x007435 VAddr 0x007fc7e30b3000
-     GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:00:157
-     remote address: LID 0000 QPN 0x00bb PSN 0x5db3a7 OUT 0x10 RKey 0x007939 VAddr 0x007f68a13c1000
-     GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:00:155
-    ---------------------------------------------------------------------------------------
-     #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
-    Conflicting CPU frequency values detected: 999.991000 != 1047.331000. CPU Frequency is not max.
-     65536      1000             10584.99            10584.57                  0.169353
-    ---------------------------------------------------------------------------------------
-    ```
-
-    ```text
-    # 在cu05上执行
-    $ ib_send_bw
-
-    # 在cu07上执行
-    $ ib_send_bw -d mlx5_0 10.0.0.155
-    ---------------------------------------------------------------------------------------
-                        Send BW Test
-     Dual-port       : OFF          Device         : mlx5_0
-     Number of qps   : 1            Transport type : IB
-     Connection type : RC           Using SRQ      : OFF
-     TX depth        : 128
-     CQ Moderation   : 100
-     Mtu             : 1024[B]
-     Link type       : Ethernet
-     GID index       : 3
-     Max inline data : 0[B]
-     rdma_cm QPs     : OFF
-     Data ex. method : Ethernet
-    ---------------------------------------------------------------------------------------
-     local address: LID 0000 QPN 0x00bb PSN 0x7507fa
-     GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:00:157
-     remote address: LID 0000 QPN 0x00bd PSN 0xb1beea
-     GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:00:155
-    ---------------------------------------------------------------------------------------
-     #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
-    Conflicting CPU frequency values detected: 999.996000 != 1031.872000. CPU Frequency is not max.
-     65536      1000             11116.32            11115.93                  0.177855
-    ---------------------------------------------------------------------------------------
-    ```
-
-### 5. 在容器内使用perftest测试
-
-容器内查看设备
+#### 测试之前检查RDMA网卡
 
 ```text
 $ kubectl exec -it iperf-server -- ibv_devices
-device                 node GUID
-------              ----------------
-mlx5_1              1e8744fffe7ca496
-mlx5_65             daa23afffe2452d2
-mlx5_37             2a5549fffe26143a
-mlx5_75             f6305afffe1b1420
-mlx5_47             9edae3fffe18c265
-mlx5_19             a66f13fffeb1a016
-mlx5_85             6a05a8fffe6f1299
-mlx5_57             f6fc11fffe65c6f8
-mlx5_101            fec170fffec3484e
-mlx5_29             8e8c38fffe7a0590
-mlx5_95             4a3b8dfffef3959b
-mlx5_3              8e2d1efffef2a3f7
-mlx5_67             660e27fffe35c773
-mlx5_111            1ac437fffebe9dc2 
+device               node GUID
+------            ----------------
+mlx5_0            506b4b0300284df4
+
 ......
 
 $ kubectl exec -it iperf-server -- ibv_devinfo -d mlx5_0
-hca_id: mlx5_1
-        transport:                      InfiniBand (0)
-        fw_ver:                         16.23.1020
-        node_guid:                      1e87:44ff:fe7c:a496
-        sys_image_guid:                 506b:4b03:0028:4df0
-        vendor_id:                      0x02c9
-        vendor_part_id:                 4120
-        hw_ver:                         0x0
-        board_id:                       MT_0000000011
-        phys_port_cnt:                  1
+hca_id: mlx5_0
+        transport:               InfiniBand (0)
+        fw_ver:                  16.23.1020
+        node_guid:               506b:4b03:0028:4df4
+        sys_image_guid:          506b:4b03:0028:4df4
+        vendor_id:               0x02c9
+        vendor_part_id:          4119
+        hw_ver:                  0x0
+        board_id:                MT_0000000011
+        phys_port_cnt:           1
         Device ports:
-                port:   1
-                        state:                  PORT_DOWN (1)
-                        max_mtu:                4096 (5)
-                        active_mtu:             1024 (3)
-                        sm_lid:                 0
-                        port_lid:               0
-                        port_lmc:               0x00
-                        link_layer:             Ethernet
+                port:	1
+                      state:               PORT_ACTIVE (4)
+                      max_mtu:             4096 (5)
+                      active_mtu:          1024 (3)
+                      sm_lid:              0
+                      port_lid:            0
+                      port_lmc:            0x00
+                      link_layer:          Ethernet
+
 
 $ kubectl exec -it iperf-server -- ibstat mlx5_0
-CA 'mlx5_1'
-        CA type: MT4120
+CA 'mlx5_0'
+        CA type: MT4119
         Number of ports: 1
         Firmware version: 16.23.1020
         Hardware version: 0
-        Node GUID: 0x1e8744fffe7ca496
-        System image GUID: 0x506b4b0300284df0
+        Node GUID: 0x506b4b0300284df4
+        System image GUID: 0x506b4b0300284df4
         Port 1:
-                State: Down
-                Physical state: Disabled
-                Rate: 100
-                Base lid: 0
-                LMC: 0
-                SM lid: 0
-                Capability mask: 0x04010000
-                Port GUID: 0x0000000000000000
-                Link layer: Ethernet
+              State: Active
+              Physical state: LinkUp
+              Rate: 100
+              Base lid: 0
+              LMC: 0
+              SM lid: 0
+              Capability mask: 0x04010000
+              Port GUID: 0x0000000000000000
+              Link layer: Ethernet
 ```
 
-1. 连通性测试
+#### 选取同一个node上的pod，进行 RDMA 性能测试
 
-    ```text
-    # 在iperf-server上创建server端
-    $  kubectl exec -it iperf-server -- ifconfig eth0
-    eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-            inet 10.244.3.3  netmask 255.255.255.255  broadcast 0.0.0.0
-            ether 0a:f8:22:54:bb:1c  txqueuelen 0  (Ethernet)
-            RX packets 7118489  bytes 111002527092 (103.3 GiB)
-            RX errors 0  dropped 0  overruns 0  frame 0
-            TX packets 2101475  bytes 138788442 (132.3 MiB)
-            TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+使用HCA，在测试时不需要添加`-zR`参数
 
-    $ kubectl exec -it iperf-server -- rdma_server
+##### ib_read_bw
 
-    # 在iperf-client-1上执行
-    $ kubectl exec -it iperf-client-1 -- rdma_client -s 10.244.3.3
-    rdma_client: start
-    rdma_client: end 0
-    ```
-
-2. 性能测试
-
-    ```
-    $ kubectl exec -it iperf-server -- ib_atomic_bw -d mlx5_0
-    $ kubectl exec -it iperf-client-1 -- ib_atomic_bw -d mlx5_0 10.244.3.3
-    ```
-
- ibping 参数说明
 ```text
-# server 端
--S：以服务器端运行
--C：是CA,来自ibstat的输出
--P：端口号,来自ibstat的输出
-
- # client 端
--c：发送10000个packet之后停止. 
--f：flood destination 
--C：是CA,来自ibstat的输出 
--P：端口号,来自服务器端运行ibping命令时指定的-P 参数值. 
--L：Base lid,来自服务器端运行ibping命令时指定的端口(-P 参数值)的base lid(参考ibstat)
+$ kubectl exec -it iperf-server -- ib_read_bw -d mlx5_0
+$ kubectl exec -it iperf-client-3 -- ib_read_bw -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    RDMA_Read BW Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 128
+ CQ Moderation   : 100
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 5
+ Outstand reads  : 16
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00d7 PSN 0x39f9c4 OUT 0x10 RKey 0x006f20 VAddr 0x007f3ce360f000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:05
+ remote address: LID 0000 QPN 0x00d6 PSN 0x972818 OUT 0x10 RKey 0x0039a6 VAddr 0x007fbb12e42000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
+Conflicting CPU frequency values detected: 1000.013000 != 3085.970000. CPU Frequency is not max.
+ 65536      1000             8361.75            8361.60            0.133786
+---------------------------------------------------------------------------------------
 ```
 
- 执行测试
+##### ib_read_lat
 
- ```text
-# 在一个节点上启动 server
-$ ib_send_bw -d mlx5_1 -i 1 -F --report_gbits
+```text
+$ kubectl exec -it iperf-server -- ib_read_lat -d mlx5_0
+$ kubectl exec -it iperf-client-3 -- ib_read_lat -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    RDMA_Read Latency Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 1
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 5
+ Outstand reads  : 16
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00d9 PSN 0xd3de8a OUT 0x10 RKey 0x009442 VAddr 0x007f8a57beb000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:05
+ remote address: LID 0000 QPN 0x00da PSN 0xf7a691 OUT 0x10 RKey 0x009c8b VAddr 0x007fa6ec8ce000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+Conflicting CPU frequency values detected: 1000.002000 != 1230.297000. CPU Frequency is not max.
+Conflicting CPU frequency values detected: 1000.043000 != 3299.999000. CPU Frequency is not max.
+ 2       1000          1.41           1.58         1.44                1.44            0.02            1.49                          1.58
+---------------------------------------------------------------------------------------
+```
 
- $ ib_send_bw -d mlx4_0 -i 1 -F --report_gbits 12.12.12.1
+##### ib_write_bw
+
+```text
+$ kubectl exec -it iperf-server -- ib_write_bw -d mlx5_0
+$ kubectl exec -it iperf-client-3 -- ib_write_bw -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    RDMA_Write BW Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 128
+ CQ Moderation   : 100
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 5
+ Max inline data : 0[B]
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00dc PSN 0xaf4f66 RKey 0x007221 VAddr 0x007f6a81a7c000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:05
+ remote address: LID 0000 QPN 0x00dd PSN 0x5559f1 RKey 0x0046b1 VAddr 0x007f80acbde000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
+Conflicting CPU frequency values detected: 1004.057000 != 2293.927000. CPU Frequency is not max.
+ 65536      5000             11750.14            11749.78                  0.187996
+---------------------------------------------------------------------------------------
+```
+
+##### ib_write_lat
+
+```text
+$ kubectl exec -it iperf-server -- ib_write_lat -d mlx5_0
+$ kubectl exec -it iperf-client-3 -- ib_write_lat -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    RDMA_Write Latency Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 1
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 5
+ Max inline data : 220[B]
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00df PSN 0xe93629 RKey 0x00ac96 VAddr 0x007f9c82281000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:05
+ remote address: LID 0000 QPN 0x00e0 PSN 0x90e8e3 RKey 0x00c9b4 VAddr 0x007fd09306d000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+Conflicting CPU frequency values detected: 999.997000 != 1025.722000. CPU Frequency is not max.
+Conflicting CPU frequency values detected: 1001.851000 != 3305.279000. CPU Frequency is not max.
+ 2       1000          0.76           1.58         0.77                0.77            0.01            0.82                          1.58
+---------------------------------------------------------------------------------------
+```
+
+##### ib_atomic_bw
+
+```text
+$ kubectl exec -it iperf-server -- ib_atomic_bw -d mlx5_0
+$ kubectl exec -it iperf-client-3 -- ib_atomic_bw -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    Atomic FETCH_AND_ADD BW Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 128
+ CQ Moderation   : 100
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 5
+ Outstand reads  : 16
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00e3 PSN 0xb9bb78
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:05
+ remote address: LID 0000 QPN 0x00e2 PSN 0x70fdb0
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
+Conflicting CPU frequency values detected: 1000.001000 != 1040.697000. CPU Frequency is not max.
+ 8          1000             16.29              16.20               2.123211
+---------------------------------------------------------------------------------------
+```
+
+##### ib_atomic_lat
+
+```text
+$ kubectl exec -it iperf-server -- ib_atomic_lat -d mlx5_0
+$ kubectl exec -it iperf-client-3 -- ib_atomic_lat -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    Atomic FETCH_AND_ADD Latency Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 1
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 5
+ Outstand reads  : 16
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00e5 PSN 0x1f7df5
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:05
+ remote address: LID 0000 QPN 0x00e6 PSN 0x2f4dd0
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+Conflicting CPU frequency values detected: 1000.012000 != 1023.381000. CPU Frequency is not max.
+Conflicting CPU frequency values detected: 1000.004000 != 3300.000000. CPU Frequency is not max.
+ 8       1000          1.42           6.29         1.45               1.45           0.02             1.50                        6.29
+---------------------------------------------------------------------------------------
+```
+
+##### ib_send_bw
+
+```text
+$ kubectl exec -it iperf-server -- ib_send_bw -d mlx5_0
+$ kubectl exec -it iperf-client-3 -- ib_send_bw -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    Send BW Test
+ Dual-port       : OFF                Device         : mlx5_0
+ Number of qps   : 1                  Transport type : IB
+ Connection type : RC                 Using SRQ      : OFF
+ TX depth        : 128
+ CQ Moderation   : 100
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 3
+ Max inline data : 0[B]
+ rdma_cm QPs     : ON
+ Data ex. method : rdma_cm
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x04b9 PSN 0x993dac
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:04
+ remote address: LID 0000 QPN 0x08af PSN 0xece310
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:33:03
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
+Conflicting CPU frequency values detected: 999.999000 != 1033.893000. CPU Frequency is not max.
+ 65536      1000             10987.21            10986.50                 0.175784
+---------------------------------------------------------------------------------------
+```
+
+##### ib_send_lat
+
+```text
+$ kubectl exec -it iperf-server -- ib_send_lat -d mlx5_0 -zR
+$ kubectl exec -it iperf-client-3 -- ib_send_lat -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    Send Latency Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 1
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 5
+ Max inline data : 236[B]
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00f0 PSN 0xe8654e
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:05
+ remote address: LID 0000 QPN 0x00f1 PSN 0xcf5ace
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+Conflicting CPU frequency values detected: 1000.001000 != 1035.415000. CPU Frequency is not max.
+Conflicting CPU frequency values detected: 1021.718000 != 998.636000. CPU Frequency is not max.
+ 2       1000          0.80           1.00         0.86                0.86            0.02            0.91                          1.00
+---------------------------------------------------------------------------------------
+```
+
+#### 选取不同node上的pod，进行 RDMA 性能测试
+
+##### ib_read_bw
+
+```text
+$ kubectl exec -it iperf-server -- ib_read_bw -d mlx5_0
+$ kubectl exec -it iperf-client-1 -- ib_read_bw -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    RDMA_Read BW Test
+ Dual-port       : OFF           Device         : mlx5_0
+ Number of qps   : 1             Transport type : IB
+ Connection type : RC            Using SRQ      : OFF
+ TX depth        : 128
+ CQ Moderation   : 100
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 9
+ Outstand reads  : 16
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00d9 PSN 0x25a419 OUT 0x10 RKey 0x00a363 VAddr 0x007fb2e944e000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:31:08
+ remote address: LID 0000 QPN 0x00d5 PSN 0x8f7bc1 OUT 0x10 RKey 0x005ac6 VAddr 0x007f4cb368d000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
+Conflicting CPU frequency values detected: 1000.005000 != 2294.713000. CPU Frequency is not max.
+ 65536      1000             10402.10            10401.76                  0.166428
+---------------------------------------------------------------------------------------
+```
+
+##### ib_write_lat
+
+```text
+$ kubectl exec -it iperf-server -- ib_write_lat -d mlx5_0 -zR
+$ kubectl exec -it iperf-client-1 -- ib_write_lat -d mlx5_0 10.0.33.3 -zR
+---------------------------------------------------------------------------------------
+                    RDMA_Read Latency Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 1
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 9
+ Outstand reads  : 16
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00da PSN 0x457738 OUT 0x10 RKey 0x00ab6b VAddr 0x007f56b6263000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:31:08
+ remote address: LID 0000 QPN 0x00d8 PSN 0xc99349 OUT 0x10 RKey 0x008634 VAddr 0x007fdf146d5000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+Conflicting CPU frequency values detected: 1000.004000 != 3037.899000. CPU Frequency is not max.
+Conflicting CPU frequency values detected: 1000.002000 != 3299.938000. CPU Frequency is not max.
+ 2       1000          2.34           7.75         2.38                2.40            0.06              2.71                         7.75
+---------------------------------------------------------------------------------------
+```
+
+##### ib_write_bw
+
+```text
+$ kubectl exec -it iperf-server -- ib_write_bw -d mlx5_0
+$ kubectl exec -it iperf-client-1 -- ib_write_bw -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    RDMA_Write BW Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 128
+ CQ Moderation   : 100
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 9
+ Max inline data : 0[B]
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00db PSN 0x7af55e RKey 0x001a8d VAddr 0x007fd9a8655000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:31:08
+ remote address: LID 0000 QPN 0x00db PSN 0xe9831e RKey 0x001568 VAddr 0x007ff1684ec000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
+Conflicting CPU frequency values detected: 1001.133000 != 3252.099000. CPU Frequency is not max.
+ 65536      5000             11026.69            11026.31                  0.176421
+---------------------------------------------------------------------------------------
+```
+
+##### ib_write_lat
+
+```text
+$ kubectl exec -it iperf-server -- ib_write_lat -d mlx5_0
+$ kubectl exec -it iperf-client-1 -- ib_write_lat -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    RDMA_Write Latency Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 1
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 9
+ Max inline data : 220[B]
+ rdma_cm QP      : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00dc PSN 0x8e9419 RKey 0x00b5a9 VAddr 0x007f1e09dc7000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:31:08
+ remote address: LID 0000 QPN 0x00de PSN 0x92c311 RKey 0x00a894 VAddr 0x007f00a8deb000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+Conflicting CPU frequency values detected: 1000.021000 != 1095.907000. CPU Frequency is not max.
+Conflicting CPU frequency values detected: 999.997000 != 2644.217000. CPU Frequency is not max.
+ 2       1000          1.24           4.63         1.26                1.27            0.10             1.31                         4.63
+---------------------------------------------------------------------------------------
+```
+
+##### ib_atomic_bw
+
+```text
+$ kubectl exec -it iperf-server -- ib_atomic_bw -d mlx5_0
+$ kubectl exec -it iperf-client-1 -- ib_atomic_bw -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    Atomic FETCH_AND_ADD BW Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 128
+ CQ Moderation   : 100
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 9
+ Outstand reads  : 16
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00dd PSN 0x96044c
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:31:08
+ remote address: LID 0000 QPN 0x00e1 PSN 0x688d07
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
+Conflicting CPU frequency values detected: 999.993000 != 1134.962000. CPU Frequency is not max.
+ 8          1000             16.84              16.13                2.114323
+---------------------------------------------------------------------------------------
+```
+
+##### ib_atomic_lat
+
+```text
+$ kubectl exec -it iperf-server -- ib_atomic_lat -d mlx5_0
+$ kubectl exec -it iperf-client-1 -- ib_atomic_lat -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    Atomic FETCH_AND_ADD Latency Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 1
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 9
+ Outstand reads  : 16
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00de PSN 0xccdb77
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:31:08
+ remote address: LID 0000 QPN 0x00e4 PSN 0x310915
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+Conflicting CPU frequency values detected: 1000.013000 != 1137.630000. CPU Frequency is not max.
+Conflicting CPU frequency values detected: 1000.080000 != 3313.128000. CPU Frequency is not max.
+ 8       1000          2.29           2.53         2.33                2.34            0.02              2.40                        2.53
+---------------------------------------------------------------------------------------
+```
+
+##### ib_send_bw
+
+```text
+$ kubectl exec -it iperf-server -- ib_send_bw -d mlx5_0
+$ kubectl exec -it iperf-client-1 -- ib_send_bw -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    Send BW Test
+ Dual-port       : OFF                Device         : mlx5_0
+ Number of qps   : 1                  Transport type : IB
+ Connection type : RC                 Using SRQ      : OFF
+ TX depth        : 128
+ CQ Moderation   : 100
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 3
+ Max inline data : 0[B]
+ rdma_cm QPs     : ON
+ Data ex. method : rdma_cm
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x04b9 PSN 0x993dac
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:04
+ remote address: LID 0000 QPN 0x08af PSN 0xece310
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:33:03
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
+Conflicting CPU frequency values detected: 999.999000 != 1033.893000. CPU Frequency is not max.
+ 65536      1000             10987.21            10986.50                 0.175784
+---------------------------------------------------------------------------------------
+```
+
+##### ib_send_lat
+
+```text
+$ kubectl exec -it iperf-server -- ib_send_lat -d mlx5_0 -zR
+$ kubectl exec -it iperf-client-1 -- ib_send_lat -d mlx5_0 10.0.32.6
+---------------------------------------------------------------------------------------
+                    Send Latency Test
+ Dual-port       : OFF          Device         : mlx5_0
+ Number of qps   : 1            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ TX depth        : 1
+ Mtu             : 1024[B]
+ Link type       : Ethernet
+ GID index       : 9
+ Max inline data : 236[B]
+ rdma_cm QPs     : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x00e3 PSN 0xcfb191
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:31:08
+ remote address: LID 0000 QPN 0x00ef PSN 0xfae957
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:00:32:06
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+Conflicting CPU frequency values detected: 1000.001000 != 1158.268000. CPU Frequency is not max.
+Conflicting CPU frequency values detected: 999.998000 != 3300.000000. CPU Frequency is not max.
+ 2       1000          1.29           3.77         1.35                1.35            0.05             1.43                         3.77
+---------------------------------------------------------------------------------------
 ```
 
 ### 参考
