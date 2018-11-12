@@ -18,6 +18,8 @@ spec:
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: nvidia.com/gpu
       containers:
       - name: node-exporter
         image: quay.io/prometheus/node-exporter:v0.15.2

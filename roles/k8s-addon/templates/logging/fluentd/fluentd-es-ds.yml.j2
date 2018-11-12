@@ -19,6 +19,8 @@ spec:
         operator: Exists
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: nvidia.com/gpu
       priorityClassName: system-node-critical
       serviceAccountName: fluentd-es
       containers:

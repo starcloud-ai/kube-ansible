@@ -12,3 +12,5 @@ roles-bk/
 extra-playbooks-bk/
 *.ini
 openrc
+*.pyc
+inventory-instance/

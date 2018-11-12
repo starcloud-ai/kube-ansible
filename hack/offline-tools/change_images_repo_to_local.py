@@ -35,7 +35,7 @@ repo_pattern_obj = {}
 
 
 def process_line(file, line, repo):
-    if repo in file:
+    if repo in line:
         return False, line
 
     for p in repo_pattern:

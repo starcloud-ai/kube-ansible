@@ -76,10 +76,12 @@ data:
       "type": "multus",
       "delegates": [
         {
-          "type": "sriov",
-          "name": "sriov.1",
-          "if0": "{{ pfNetdevices[0] }}",
-          "ipam": {{ sriov_ipam_config|convert2jsonstr }}
+          "cniVersion": "0.3.0",
+          "type": "macvlan",
+          "name": "macvlan.1",
+          "master": "{{ pfNetdevices[0] }}",
+          "mode": "bridge",
+          "ipam": {{ macvlan_ipam_config|convert2jsonstr }}
         }
       ],
       "kubeconfig": "/etc/cni/net.d/multus.d/multus.kubeconfig",
