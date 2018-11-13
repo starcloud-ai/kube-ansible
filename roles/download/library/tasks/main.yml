@@ -1,7 +1,0 @@
-- name: Install packages (RHEL/CentOS)
-  when: 'pkg is defined and pkg.apt_name is defined and ansible_os_family == "RedHat"'
-  yum: name={{ pkg.yum_name }} state=present
-
-- name: Install packages (Debian/Ubuntu)
-  when: 'pkg is defined and pkg.apt_name is defined and ansible_os_family == "Debian"'
-  apt: name={{ pkg.apt_name }} state=present
