@@ -76,6 +76,13 @@ data:
       "type": "multus",
       "delegates": [
         {
+          "type": "flannel",
+          "name": "flannel.1",
+          "delegate": {
+            "isDefaultGateway": true
+          }
+        },
+        {
           "type": "sriov",
           "name": "sriov.1",
           "if0": "{{ pfNetdevices[0] }}",
@@ -144,5 +151,7 @@ spec:
             items:
             - key: cni-conf.json
               path: 70-multus.conf
+
+{% include "multus/flannel4multus.yml.j2" %}
 
 {% include "multus/sriov4multus.yml.j2" %}
