@@ -1,7 +1,7 @@
 kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
-  name: nfs-client-provisioner
+  name: {{ storage.name }}
 spec:
   replicas: 1
   strategy:
@@ -20,13 +20,13 @@ spec:
               mountPath: /persistentvolumes
           env:
             - name: PROVISIONER_NAME
-              value: fuseim.pri/ifs
+              value: {{ storage.provisioner }}
             - name: NFS_SERVER
-              value: {{ nfs_server }}
+              value: {{ storage.nfs_server }}
             - name: NFS_PATH
-              value: {{ nfs_path }}
+              value: {{ storage.nfs_path }}
       volumes:
         - name: nfs-client-root
           nfs:
-            server: {{ nfs_server }}
-            path: {{ nfs_path }}
+            server: {{ storage.nfs_server }}
+            path: {{ storage.nfs_path }}

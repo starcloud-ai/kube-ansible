@@ -1,5 +1,11 @@
 ---
 
+- name: "Delete {{ addon.name }} addons old directory"
+  when: addon is defined
+  file: path="{{ addon_dir }}/{{ item }}" state=absent
+  with_items: "{{ addon.dirs }}"
+  ignore_errors: true
+
 - name: "Ensure {{ addon.name }} addons directory exists"
   when: addon is defined
   file: path="{{ addon_dir }}/{{ item }}" state=directory
