@@ -6,12 +6,13 @@
   gather_facts: false
   roles:
   - { role: cluster-default, tags: always }
+  - { role: k8s-addon, tags: nfs-client,      when: enable_nfs_client,       addon: "{{ addons.nfs_client }}", storage: "{{ storages.nfs }}" }
+  - { role: k8s-addon, tags: rdma-nfs-client, when: enable_rdma_nfs_client,  addon: "{{ addons.nfs_client }}", storage: "{{ storages.rdma_nfs }}" }
   - { role: k8s-addon, tags: dashboard,     when: enable_dashboard,     addon: "{{ addons.dashboard }}" }
   - { role: k8s-addon, tags: logging,       when: enable_logging,       addon: "{{ addons.logging }}" }
   - { role: k8s-addon, tags: monitoring,    when: enable_monitoring,    addon: "{{ addons.monitoring }}" }
   - { role: k8s-addon, tags: ingress-nginx, when: enable_ingress,       addon: "{{ addons.ingress_nginx }}" }
   - { role: k8s-addon, tags: metric-server, when: enable_metric_server, addon: "{{ addons.metric_server }}" }
   - { role: k8s-addon, tags: helm,          when: enable_helm,          addon: "{{ addons.helm }}" }
-  - { role: k8s-addon, tags: nfs-client,    when: enable_nfs_client,    addon: "{{ addons.nfs_client }}" }
   - { role: k8s-addon, tags: docker-registry,    when: enable_docker_registry,    addon: "{{ addons.docker_registry }}" }
   - { role: k8s-addon, tags: external-dns,    when: enable_external_dns,    addon: "{{ addons.external_dns }}" }
