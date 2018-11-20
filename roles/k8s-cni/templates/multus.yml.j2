@@ -81,12 +81,6 @@ data:
           "delegate": {
             "isDefaultGateway": true
           }
-        },
-        {
-          "type": "sriov",
-          "name": "sriov.1",
-          "if0": "{{ pfNetdevices[0] }}",
-          "ipam": {{ sriov_ipam_config|convert2jsonstr }}
         }
       ],
       "kubeconfig": "/etc/cni/net.d/multus.d/multus.kubeconfig",
