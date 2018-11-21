@@ -26,6 +26,8 @@ spec:
         key: node-role.kubernetes.io/master
       - effect: NoSchedule
         key: nvidia.com/gpu
+      - effect: NoSchedule
+        key: node/cpu
       hostNetwork: true
       containers:
       - name: kube-proxy

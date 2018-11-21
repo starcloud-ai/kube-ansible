@@ -34,6 +34,8 @@ spec:
         operator: Exists
       - effect: NoSchedule
         key: nvidia.com/gpu
+      - effect: NoSchedule
+        key: node/cpu
       containers:
       - image: rdma/k8s-rdma-sriov-dev-plugin
         name: k8s-rdma-sriov-dp-ds
@@ -74,6 +76,8 @@ spec:
         effect: NoSchedule
       - effect: NoSchedule
         key: nvidia.com/gpu
+      - effect: NoSchedule
+        key: node/cpu
       initContainers:
       - name: install-cni
         image: rdma/k8s-sriov-cni-installer
