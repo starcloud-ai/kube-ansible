@@ -100,6 +100,8 @@ spec:
         effect: NoSchedule
       - effect: NoSchedule
         key: nvidia.com/gpu
+      - effect: NoSchedule
+        key: node/cpu
       serviceAccountName: flannel
       initContainers:
       - name: install-cni

@@ -113,6 +113,8 @@ spec:
         effect: NoSchedule
       - effect: NoSchedule
         key: nvidia.com/gpu
+      - effect: NoSchedule
+        key: node/cpu
       serviceAccountName: multus
       containers:
       - name: kube-multus

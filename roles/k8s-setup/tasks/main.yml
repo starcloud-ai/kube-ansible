@@ -36,6 +36,18 @@
   delay: 2
   ignore_errors: true
 
+- name: Set taint cpu-node to effect NoSchedule
+  when: node_role == 'node' and container_runtime == 'docker'
+  command: |
+    {{ bin_dir }}/kubectl --kubeconfig={{ admin_kubeconfig }} \
+      taint nodes {{ ansible_hostname }} node/cpu="":NoSchedule --overwrite
+  delegate_to: "{{ groups['masters'][0] }}"
+  register: set_taint
+  until: set_taint.rc == 0
+  retries: 10
+  delay: 2
+  ignore_errors: true
+
 - name: Fetch kubeconfig to localhost
   when: node_role == 'master'
   fetch:
