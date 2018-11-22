@@ -6,5 +6,5 @@ provisioner: {{ storage.provisioner }} # or choose another name, must match depl
 parameters:
   archiveOnDelete: "false"
 {% if storage.mountOptions is defined %}
-mountOptions: {{ storage.mountOptions }}
+mountOptions: {{ storage.mountOptions|convert2jsonstr }}
 {% endif %}
