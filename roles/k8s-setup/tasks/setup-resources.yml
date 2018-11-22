@@ -71,7 +71,7 @@
   register: copy_nvidia_device_plugin_file
 
 - name: Create nvidia device plugin daemonset
-  when: container_runtime == 'nvidia-docker' and service_started and copy_nvidia_device_plugin_file
+  when: service_started and copy_nvidia_device_plugin_file
   command: |
     {{ bin_dir }}/kubectl --kubeconfig={{ admin_kubeconfig }} \
       apply -f {{ cache_dir }}/nvidia-device-plugin.yml
