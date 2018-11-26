@@ -81,7 +81,7 @@ spec:
         key: node/cpu
       initContainers:
       - name: install-cni
-        image: rdma/k8s-sriov-cni-installer
+        image: clustarai/k8s-sriov-cni-installer:x86_64
         imagePullPolicy: IfNotPresent
         command: ["sh", "-c", "/installer/installer.sh; mv /host-cni-etc/10-sriov-cni.conf /host-cni-etc/999-sriov-cni.conf" ]
         volumeMounts:
@@ -91,7 +91,7 @@ spec:
           mountPath: /host-cni-bin
       containers:
       - name: install-cni-sleep
-        image: rdma/k8s-sriov-cni-installer
+        image: clustarai/k8s-sriov-cni-installer:x86_64
         imagePullPolicy: IfNotPresent
         command: [ "/installer/installer_sleep.sh" ]
       volumes:
@@ -106,10 +106,10 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: sriov-conf
-spec: 
+spec:
   config: '{
       "name": "sriov.2",
       "type": "sriov",
-      "if0": "{{ pfNetdevices[0] }}",
+      "pfNetdevices": {{ pfNetdevices|convert2jsonstr }}
       "ipam": {{ sriov_ipam_config|convert2jsonstr }}
     }'
