@@ -28,7 +28,6 @@ enable_metric_server: false
 enable_nfs_client: false
 enable_rdma_nfs_client: false
 enable_helm: false
-enable_docker_registry: false
 enable_external_dns: false
 
 ingress_domain: "k8s.local"
@@ -68,11 +67,6 @@ monitoring:
     ingress_host: "prometheus.{{ ingress_domain }}"
   grafana:
     ingress_host: "grafana.{{ ingress_domain }}"
-
-docker_registry:
-  ingress_host: "registry.{{ ingress_domain }}"
-  storage_class_name: "nfs"
-  storage_size: "10Ti"
 
 external_dns:
   dns_vip: {{ vip_address }}

@@ -158,20 +158,6 @@ addons:
       - nfs-client/clusterrolebinding.yaml
       - nfs-client/deployment.yaml
       - nfs-client/class.yaml
-  docker_registry:
-    name: docker_registry
-    dirs:
-      - docker-registry
-    dependencies:
-      - name: docker-registry
-        kind: ns
-        files:
-          - docker-registry/registry-ns.yml
-    templates:
-      - docker-registry/registry-dp.yml
-      - docker-registry/registry-ing.yml
-      - docker-registry/registry-secret.yml
-      - docker-registry/registry-svc.yml
   external_dns:
     name: external_dns
     dirs:
