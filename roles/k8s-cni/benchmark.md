@@ -65,6 +65,7 @@ docker push 172.16.0.200:5000/asdfsx/mofed_benchmark
 ```
 
 使用mofed的安装包，会使用rpm安装perftest，包含以下内容
+
 | 名称 | 路径 | 说明 |
 | --- | --- | --- |
 | ib_atomic_bw | /usr/bin/ib_atomic_bw | --- |
@@ -608,6 +609,22 @@ Conflicting CPU frequency values detected: 1000.036000 != 3287.575000. CPU Frequ
  2       1000          1.61           4.19         1.68                1.70            0.10             2.00                          4.19
 ---------------------------------------------------------------------------------------
 ```
+
+#### 整理结果
+
+|  | #bytes | #iterations | BW peak[MB/sec] | BW average[MB/sec] | MsgRate[Mpps] |
+| -- | -- | -- | -- | -- | -- |
+|ib_read_bw | 65536 | 1000 | 10402.09 | 10401.68 | 0.166427 |
+|ib_write_bw | 65536 | 5000 | 11025.44 | 11024.71 | 0.176395 |
+|ib_atomic_bw | 8 | 1000 | 16.62 | 16.56 | 2.170493 |
+|ib_send_bw | 65536 | 1000 | 10987.21 | 10986.5 | 0.175784 |
+
+|  | #bytes | #iterations | t_min[usec] | t_max[usec] | t_typical[usec] | t_avg[usec] | t_stdev[usec] | 99% percentile[usec] | 99.9% percentile[usec] |
+| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+|ib_read_lat | 2 | 1000 | 2.64 | 5.5 | 2.69 | 2.69 | 0.02 | 2.75 | 5.5 |
+|ib_write_lat | 2 | 1000 | 1.54 | 2.13 | 1.58 | 1.58 | 0.01 | 1.65 | 2.13 |
+|ib_atomic_lat | 8 | 1000 | 2.6 | 5.01 | 2.65 | 2.65 | 0.03 | 2.77 | 5.01 |
+|ib_send_lat | 2 | 1000 | 1.61 | 4.19 | 1.68 | 1.7 | 0.1 | 2 | 4.19 |
 
 ## hca 容器网络测试
 
