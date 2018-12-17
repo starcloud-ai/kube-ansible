@@ -7,6 +7,7 @@
 ## hca
 
 使用Mellanox的网卡，有两种工作模式，hca是其中的一种。这种工作模式基本就是将Mellanox网卡作为一块普通网卡来，需要配合calico来进行使用。
+更新：根据实际使用情况，使用HCA模式最好使用macvlan。实际使用过程中发现calico无法使用IB网络。
 
 ### 测试hca
 
@@ -265,4 +266,8 @@ flannel 使用默认配置就可以了。因为在flannel的设计中，不同�
     * net2
       由sriov创建，ip地址由DHCP服务分配
 
-
+问题：
+> Could not generate persistent MAC address for vethcf679fdd: No such file or directory
+相关说明：https://github.com/systemd/systemd/issues/3374
+        https://github.com/moby/moby/issues/26492
+解决办法：重启服务器
