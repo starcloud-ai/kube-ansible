@@ -267,7 +267,9 @@ flannel 使用默认配置就可以了。因为在flannel的设计中，不同�
       由sriov创建，ip地址由DHCP服务分配
 
 问题：
+
 > Could not generate persistent MAC address for vethcf679fdd: No such file or directory
+
 相关说明：https://github.com/systemd/systemd/issues/3374
         https://github.com/moby/moby/issues/26492
 解决办法：重启服务器
