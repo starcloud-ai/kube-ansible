@@ -110,6 +110,6 @@ spec:
   config: '{
       "name": "sriov.2",
       "type": "sriov",
-      "pfNetdevices": {{ pfNetdevices|convert2jsonstr }}
+      "pfNetdevices": {{ pfNetdevices|convert2jsonstr }},
       "ipam": {{ sriov_ipam_config|convert2jsonstr }}
     }'
