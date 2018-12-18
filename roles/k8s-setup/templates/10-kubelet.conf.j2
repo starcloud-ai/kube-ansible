@@ -8,6 +8,10 @@ Environment="KUBELET_INFRA_IMAGE=--pod-infra-container-image={{ localrepo }}/pau
 {% endif %}
 {% if node_role == 'master'  %}
 Environment="KUBELET_EXTRA_ARGS=--node-labels=node-role.kubernetes.io/master=''"
+{% elif node_role == 'node' and container_runtime == 'docker' %}
+Environment="KUBELET_EXTRA_ARGS=--node-labels=node/cpu=''"
+{% elif node_role == 'node' and container_runtime == 'nvidia-docker' %}
+Environment="KUBELET_EXTRA_ARGS=--node-labels=nvidia.com/gpu=''"
 {% endif %}
 {% if container_runtime != 'docker' and container_runtime != 'nvidia-docker' %}
 Environment="CRI_RUNTIME_ARGS=--container-runtime=remote --container-runtime-endpoint=unix://{{ runtime_sockets['' + container_runtime] }}"

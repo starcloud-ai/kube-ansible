@@ -22,6 +22,15 @@ spec:
       - key: nvidia.com/gpu
         operator: Exists
         effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu
+                operator: In
+                values:
+                - ""
       containers:
       - image: nvidia/k8s-device-plugin:1.11
         name: nvidia-device-plugin-ctr
