@@ -79,6 +79,7 @@ addons:
       - monitoring/operator
       - monitoring/alertmanater
       - monitoring/node-exporter
+      - monitoring/gpu-exporter
       - monitoring/kube-state-metrics
       - monitoring/grafana
       - monitoring/service-discovery
@@ -114,6 +115,8 @@ addons:
       - monitoring/node-exporter/node-exporter-rbac.yml
       - monitoring/node-exporter/node-exporter-svc.yml
       - monitoring/node-exporter/node-exporter-ds.yml
+      - monitoring/gpu-exporter/gpu-exporter-ds.yml
+      - monitoring/gpu-exporter/gpu-exporter-svc.yml
       - monitoring/kube-state-metrics/kube-state-metrics-sa.yml
       - monitoring/kube-state-metrics/kube-state-metrics-rbac.yml
       - monitoring/kube-state-metrics/kube-state-metrics-svc.yml
@@ -140,6 +143,7 @@ addons:
       - monitoring/servicemonitor/node-exporter-sm.yml
       - monitoring/servicemonitor/prometheus-operator-sm.yml
       - monitoring/servicemonitor/prometheus-sm.yml
+      - monitoring/servicemonitor/gpu-exporter-sm.yml
   helm:
     name: helm
     dirs:
