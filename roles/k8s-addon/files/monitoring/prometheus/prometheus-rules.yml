@@ -445,7 +445,7 @@ spec:
           are running where they are not supposed to run.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetmisscheduled
       expr: |
-        kube_daemonset_status_number_misscheduled{job="kube-state-metrics"} > 0
+        kube_daemonset_status_number_misscheduled{job="kube-state-metrics", daemonset!="nvidia-device-plugin-daemonset"} > 0
       for: 10m
       labels:
         severity: warning
