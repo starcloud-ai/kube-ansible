@@ -11,6 +11,19 @@ spec:
       labels:
         app: nfs-client-provisioner
     spec:
+      tolerations:
+      - key: nvidia.com/cpu
+        operator: Exists
+        effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node/cpu
+                operator: In
+                values:
+                - ""
       serviceAccountName: nfs-client-provisioner
       containers:
         - name: nfs-client-provisioner
