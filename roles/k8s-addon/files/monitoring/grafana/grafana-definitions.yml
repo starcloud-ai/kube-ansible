@@ -6120,12 +6120,14 @@ items:
 
               ]
           },
-          "description": "GPU dashboard for nvidia metrics ",
-          "editable": true,
+          "editable": false,
           "gnetId": null,
-          "graphTooltip": 1,
+          "graphTooltip": 0,
+          "hideControls": false,
           "id": null,
-          "links": [ ],
+          "links": [
+
+          ],
           "refresh": "",
           "rows": [
               {
@@ -7523,143 +7525,6 @@ items:
                           "align": false,
                           "alignLevel": null
                         }
-                      },
-                      {
-                        "alert": {
-                          "conditions": [
-                            {
-                              "evaluator": {
-                                "params": [
-                                  90
-                                ],
-                                "type": "gt"
-                              },
-                              "operator": {
-                                "type": "and"
-                              },
-                              "query": {
-                                "params": [
-                                  "A",
-                                  "5m",
-                                  "now"
-                                ]
-                              },
-                              "reducer": {
-                                "params": [],
-                                "type": "avg"
-                              },
-                              "type": "query"
-                            }
-                          ],
-                          "executionErrorState": "alerting",
-                          "frequency": "5s",
-                          "handler": 1,
-                          "message": "The GPU temperature is too damn high!",
-                          "name": "GPU Temperature alert",
-                          "noDataState": "no_data",
-                          "notifications": [
-                            {
-                              "id": 1
-                            }
-                          ]
-                        },
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "fill": 0,
-                        "gridPos": {
-                          "h": 7,
-                          "w": 10,
-                          "x": 14,
-                          "y": 6
-                        },
-                        "id": 2,
-                        "legend": {
-                          "alignAsTable": true,
-                          "avg": true,
-                          "current": true,
-                          "max": true,
-                          "min": false,
-                          "rightSide": true,
-                          "show": true,
-                          "sort": "current",
-                          "sortDesc": true,
-                          "total": false,
-                          "values": true
-                        },
-                        "lines": true,
-                        "linewidth": 1,
-                        "links": [],
-                        "nullPointMode": "null",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "spaceLength": 10,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                          {
-                            "expr": "nvidia_gpu_temperature_celsius",
-                            "format": "time_series",
-                            "instant": false,
-                            "interval": "",
-                            "intervalFactor": 1,
-                            "legendFormat": "gpu-{{minor_number}}",
-                            "refId": "A"
-                          }
-                        ],
-                        "thresholds": [
-                          {
-                            "colorMode": "critical",
-                            "fill": true,
-                            "line": true,
-                            "op": "gt",
-                            "value": 90
-                          }
-                        ],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "GPU Temperature",
-                        "tooltip": {
-                          "shared": true,
-                          "sort": 2,
-                          "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                          "buckets": null,
-                          "mode": "time",
-                          "name": null,
-                          "show": true,
-                          "values": []
-                        },
-                        "yaxes": [
-                          {
-                            "decimals": null,
-                            "format": "celsius",
-                            "label": null,
-                            "logBase": 1,
-                            "max": null,
-                            "min": null,
-                            "show": true
-                          },
-                          {
-                            "format": "short",
-                            "label": null,
-                            "logBase": 1,
-                            "max": null,
-                            "min": null,
-                            "show": true
-                          }
-                        ],
-                        "yaxis": {
-                          "align": false,
-                          "alignLevel": null
-                        }
                       }
                     ],
                   "repeat": null,
@@ -7669,7 +7534,7 @@ items:
                   "title": "Dashboard Row",
                   "titleSize": "h6",
                   "type": "row"
-              },
+              }
           ],
           "schemaVersion": 14,
           "style": "dark",
