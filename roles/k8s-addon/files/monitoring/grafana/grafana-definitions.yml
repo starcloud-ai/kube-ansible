@@ -6989,27 +6989,6 @@ items:
                   "height": "250px",
                   "panels": [
                       {
-                        "dashboardFilter": "",
-                        "folderId": null,
-                        "gridPos": {
-                          "h": 4,
-                          "w": 4,
-                          "x": 0,
-                          "y": 0
-                        },
-                        "id": 27,
-                        "limit": 10,
-                        "links": [],
-                        "nameFilter": "",
-                        "onlyAlertsOnDashboard": true,
-                        "show": "current",
-                        "sortOrder": 1,
-                        "stateFilter": [],
-                        "title": "Alerts",
-                        "transparent": true,
-                        "type": "alertlist"
-                      },
-                      {
                         "cacheTimeout": null,
                         "colorBackground": false,
                         "colorValue": false,
