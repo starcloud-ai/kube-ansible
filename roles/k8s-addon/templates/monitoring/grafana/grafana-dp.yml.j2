@@ -77,6 +77,9 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/statefulset
           name: grafana-dashboard-statefulset
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/nvidia-gpu
+          name: grafana-dashboard-nvidia-gpu
+          readOnly: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
@@ -114,3 +117,6 @@ spec:
       - configMap:
           name: grafana-dashboard-statefulset
         name: grafana-dashboard-statefulset
+      - configMap:
+          name: grafana-dashboard-nvidia-gpu
+        name: grafana-dashboard-nvidia-gpu
