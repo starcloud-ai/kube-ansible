@@ -12,7 +12,7 @@ spec:
         app: nfs-client-provisioner
     spec:
       tolerations:
-      - key: nvidia.com/cpu
+      - key: node/cpu
         operator: Exists
         effect: NoSchedule
       affinity:
