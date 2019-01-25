@@ -1,13 +1,9 @@
 ---
 
-- name: select docker container
-  when: "container_runtime != 'containerd'"
+- name: Check NVIDIA device
   shell: 'lspci | grep NVIDIA'
-  register: result
+  register: check_result
   ignore_errors: true
 
-- when:
-    - "container_runtime  != 'containerd'"
-    - result.stdout != ''
-  set_fact:
-    container_runtime: 'nvidia-docker'
+- set_fact:
+    has_nvidia_device: "{{ check_result.stdout != '' }}"
