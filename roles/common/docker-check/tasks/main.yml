@@ -6,4 +6,4 @@
   register: docker_service_exists
 
 - set_fact:
-    docker_service_exists: "{{ docker_service_exists }}"
+    docker_service_exists: "{{ docker_service_exists.stat.exists }}"
