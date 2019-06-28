@@ -4,7 +4,7 @@ dependencies:
   - { role: common/os-check }
   - { role: common/nvidia-check }
   - { role: common/docker-check }
-  - { role: download/package, when: docker_service_exists == False and (container_runtime == 'docker' or container_runtime == 'nvidia-docker'), pkg: "{{ package.docker }}" }
+  - { role: download/package, when: not docker_service_exists and (container_runtime == 'docker' or container_runtime == 'nvidia-docker'), pkg: "{{ package.docker }}" }
   - { role: download/package, when: container_runtime == 'nvidia-docker', pkg: "{{ package.nvidia_docker }}" }
   - { role: download/package, when: container_runtime == 'nvidia-docker', pkg: "{{ package.nvidia_container_runtime }}" }
   - { role: download/package, when: container_runtime == 'nvidia-docker', pkg: "{{ package.libnvidia_container }}" }
