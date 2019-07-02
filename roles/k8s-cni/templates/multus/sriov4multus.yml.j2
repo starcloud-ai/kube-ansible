@@ -79,6 +79,10 @@ spec:
       - key: node-role.kubernetes.io/master
         operator: Exists
         effect: NoSchedule
+      - key: nvidia.com/gpu
+        effect: NoSchedule
+      - key: node/cpu
+        effect: NoSchedule
       containers:
       - name: kube-sriov-cni
         image: {{ localrepo }}/clustarai/k8s-sriov-cni-installer:amd64-v1.3.0
