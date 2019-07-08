@@ -13,6 +13,8 @@ spec:
       port: web
   baseImage: quay.io/prometheus/prometheus
   externalUrl: http://{{ monitoring.prometheus.ingress_host }}/
+  nodeSelector:
+    beta.kubernetes.io/os: linux
   replicas: 2
   resources:
     requests:
@@ -21,11 +23,14 @@ spec:
     matchLabels:
       prometheus: k8s
       role: alert-rules
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
   serviceAccountName: prometheus-k8s
-  serviceMonitorSelector:
-    matchExpressions:
-    - key: k8s-app
-      operator: Exists
+  serviceMonitorNamespaceSelector: {}
+  serviceMonitorSelector: {}
+  version: v2.5.0
   storage:
     volumeClaimTemplate:
       spec:
@@ -33,4 +38,3 @@ spec:
         resources:
           requests:
             storage: 10Gi
-  version: v2.3.1

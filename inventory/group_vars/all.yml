@@ -1,6 +1,6 @@
 ---
 
-kube_version: 1.11.2
+kube_version: 1.14.3
 
 # Container runtime,
 # Supported: docker, nvidia-docker, containerd.
@@ -10,14 +10,10 @@ container_runtime: docker
 # Supported: calico, flannel, sriov, multus, hca.
 cni_enable: true
 container_network: calico
-cni_iface: ""
 
 # Kubernetes HA extra variables.
 vip_interface: ""
 vip_address: 172.16.35.9
-
-# etcd extra variables.
-etcd_iface: ""
 
 # Kubernetes extra addons
 enable_ingress: false
@@ -32,8 +28,8 @@ enable_external_dns: false
 
 ingress_domain: "k8s.local"
 
-grafana_user: "admin"
-grafana_password: "p@ssw0rd"
+monitoring_grafana_user: "admin"
+monitoring_grafana_password: "p@ssw0rd"
 
 storages:
   nfs:

@@ -21,7 +21,7 @@
     - "10252"
     - "10251"
 
-- when: node_role == 'master'
+- when: node_role == 'master' and init|default(true)
   include_tasks: setup-resources.yml
 
 - name: Set taint gpu-node to effect NoSchedule
