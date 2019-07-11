@@ -6,8 +6,7 @@
   register: check_driver
 
 # containerd runtime
-- when: container_runtime == 'containerd'
-  include_tasks: containerd/main.yml
+- include_tasks: containerd/main.yml
 
 # nvidia-docker runtime
 - when:
