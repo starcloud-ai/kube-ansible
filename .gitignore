@@ -14,3 +14,4 @@ extra-playbooks-bk/
 openrc
 *.pyc
 inventory-instance/
+hosts.ini
