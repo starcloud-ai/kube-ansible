@@ -38,7 +38,7 @@ spec:
       - effect: NoSchedule
         key: node/cpu
       containers:
-      - image: {{ localrepo }}/rdma/k8s-rdma-sriov-dev-plugin
+      - image: rdma/k8s-rdma-sriov-dev-plugin
         name: k8s-rdma-sriov-dp-ds
         imagePullPolicy: IfNotPresent
         securityContext:
@@ -85,7 +85,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: kube-sriov-cni
-        image: {{ localrepo }}/clustarai/k8s-sriov-cni-installer:amd64-v1.3.0
+        image: clustarai/k8s-sriov-cni-installer:amd64-v1.3.0
         resources:
           requests:
             cpu: "100m"
@@ -97,9 +97,9 @@ spec:
         - name: cnibin
           mountPath: /host/opt/cni/bin
       volumes:
-        - name: cnibin
-          hostPath:
-            path: /opt/cni/bin
+      - name: cnibin
+        hostPath:
+          path: /opt/cni/bin
 ---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
