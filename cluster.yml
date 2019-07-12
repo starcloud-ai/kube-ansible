@@ -10,7 +10,7 @@
   gather_facts: false
   become: true
   roles:
-    - { role: cluster-default }
+    - { role: cluster-default, tags: container-runtime }
     - { role: container-runtime, tags: container-runtime }
 
 - hosts: etcds
